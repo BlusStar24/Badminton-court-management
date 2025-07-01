@@ -1,0 +1,440 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\QuanLySanCauLong\\QL_SanCauLong\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\booking\\thanhtoan.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\booking\\thanhtoan.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\controllers\\adminquanlycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\controllers\\adminquanlycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|d:\\quanlysancaulong\\ql_sancaulong\\ql_sancaulong\\views\\booking\\viewdatsan.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\booking\\viewdatsan.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\bookinginput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\bookinginput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\shared\\_layoutuser.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\shared\\_layoutuser.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\ql_sancaulongdb.edmx||{C99AEA30-8E36-4515-B76F-496F5A48A6AA}|",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\ql_sancaulongdb.edmx||{C99AEA30-8E36-4515-B76F-496F5A48A6AA}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\adminquanly\\booking.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\adminquanly\\booking.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\adminquanly\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\adminquanly\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\bookings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\bookings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\ql_sancaulongdb.context.tt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\ql_sancaulongdb.context.tt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\ql_sancaulongdb.tt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\ql_sancaulongdb.tt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\shared\\_sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\shared\\_sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\views\\auth\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\views\\auth\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\customers.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\customers.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\models\\ql_sancaulongdb.context.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\models\\ql_sancaulongdb.context.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\app_start\\routeconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\app_start\\routeconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|D:\\QuanLySanCauLong\\QL_SanCauLong\\ql_sancaulong\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E6ED816C-141B-4914-B080-A90EE45D5F2D}|QL_SanCauLong\\QL_SanCauLong.csproj|solutionrelative:ql_sancaulong\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 651,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "BookingController.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\BookingController.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Controllers\\BookingController.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\BookingController.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Controllers\\BookingController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHoAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-28T15:47:47.694Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ThanhToan.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Booking\\ThanhToan.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Booking\\ThanhToan.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Booking\\ThanhToan.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Booking\\ThanhToan.cshtml",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAAFwAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-28T16:39:43.498Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ViewDatSan.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Booking\\ViewDatSan.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Booking\\ViewDatSan.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Booking\\ViewDatSan.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Booking\\ViewDatSan.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-28T15:52:26.738Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "_ViewStart.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\_ViewStart.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\_ViewStart.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\_ViewStart.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\_ViewStart.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-28T16:11:44.104Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "_LayoutUser.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_LayoutUser.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Shared\\_LayoutUser.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_LayoutUser.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Shared\\_LayoutUser.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T14:38:09.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "BookingInput.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\BookingInput.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\BookingInput.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\BookingInput.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\BookingInput.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-28T15:50:45.664Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AdminQuanLyController.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\AdminQuanLyController.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Controllers\\AdminQuanLyController.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\AdminQuanLyController.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Controllers\\AdminQuanLyController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T14:25:49.48Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Controllers\\AuthController.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAAwH4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T08:06:38.187Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "QL_SanCauLongdb.edmx [Diagram1]",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.edmx",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\QL_SanCauLongdb.edmx",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.edmx [Diagram1]",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\QL_SanCauLongdb.edmx [Diagram1]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001116|",
+              "WhenOpened": "2025-06-28T15:46:59.351Z",
+              "EditorCaption": " [Diagram1]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "web.config",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\web.config",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\web.config",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\web.config",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\web.config",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAYwDEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-06-29T08:26:38.125Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Booking.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\AdminQuanLy\\Booking.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\AdminQuanLy\\Booking.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\AdminQuanLy\\Booking.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\AdminQuanLy\\Booking.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKwBAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T14:43:16.578Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\AdminQuanLy\\Index.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\AdminQuanLy\\Index.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\AdminQuanLy\\Index.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\AdminQuanLy\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T14:33:34.891Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T14:31:30.019Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "_Sidebar.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Shared\\_Sidebar.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Shared\\_Sidebar.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T14:32:32.476Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "bookings.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\bookings.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\bookings.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\bookings.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\bookings.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-30T08:44:02.138Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "QL_SanCauLongdb.tt",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.tt",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\QL_SanCauLongdb.tt",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.tt",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\QL_SanCauLongdb.tt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-06-30T02:51:30.701Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "QL_SanCauLongdb.Context.tt",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.tt",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.tt",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.tt",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.tt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-06-30T02:51:32.823Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Auth\\Login.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Auth\\Login.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Auth\\Login.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Auth\\Login.cshtml",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAEYAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T08:27:28.908Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Auth\\Register.cshtml",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Views\\Auth\\Register.cshtml",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Views\\Auth\\Register.cshtml",
+              "RelativeToolTip": "QL_SanCauLong\\Views\\Auth\\Register.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-29T08:15:54.736Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Web.config",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Web.config",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Web.config",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Web.config",
+              "RelativeToolTip": "QL_SanCauLong\\Web.config",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAowDoAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-06-28T15:46:12.728Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Global.asax.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Global.asax.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Global.asax.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Global.asax.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Global.asax.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T08:26:33.009Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "customers.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\customers.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\customers.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\customers.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\customers.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAowBgAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T11:32:28.99Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "QL_SanCauLongdb.Context.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.cs",
+              "RelativeToolTip": "QL_SanCauLong\\Models\\QL_SanCauLongdb.Context.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAIwB0AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T11:34:05.409Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "packages.config",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\packages.config",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\packages.config",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\packages.config",
+              "RelativeToolTip": "QL_SanCauLong\\packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-06-29T08:26:34.372Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "RouteConfig.cs",
+              "DocumentMoniker": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\App_Start\\RouteConfig.cs",
+              "RelativeDocumentMoniker": "QL_SanCauLong\\App_Start\\RouteConfig.cs",
+              "ToolTip": "D:\\QuanLySanCauLong\\QL_SanCauLong\\QL_SanCauLong\\App_Start\\RouteConfig.cs",
+              "RelativeToolTip": "QL_SanCauLong\\App_Start\\RouteConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-28T15:52:43.774Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

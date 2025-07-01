@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt lịch sân cầu lông</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .locked {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        .booked {
+            background-color: #f97316;
+            color: white;
+        }
+
+        .available {
+            background-color: #fef3c7;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        thead th:not(:first-child) {
+            position: relative;
+            left: -24px;
+        }
+
+        td {
+            min-width: 50px;
+            height: 60px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #161617;
+            border-radius: 6px;
+        }
+
+
+        .available:hover {
+            background-color: #fdba74;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+    <div class="max-w-[95vw] mx-auto px-4 py-6">
+        <!-- Header -->
+        <div
+            class="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-4 shadow-md text-white mb-8">
+            <div class="flex items-center space-x-4">
+                <img src="Images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
+                <div>
+                    <h1 class="text-2xl font-extrabold">Sân Cầu Lông Phú Thịnh</h1>
+                    <p class="text-orange-100 text-sm">Badminton Center • Tân Phú</p>
+                </div>
+            </div>
+            <p class="text-sm italic hidden md:block">Chọn sân, khung giờ và ngày phù hợp</p>
+        </div>
+
+        <!-- Chọn ngày -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-white shadow-sm p-4 rounded-xl flex items-center space-x-4">
+                <label for="dateFilter" class="font-semibold text-orange-700">Ngày:</label>
+                <input type="date" id="dateFilter"
+                    class="border border-orange-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+            </div>
+        </div>
+
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-xl shadow mb-8">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+
+                <!-- Nội dung chính -->
+                <div>
+                    <h2 class="font-bold text-orange-700 mb-2">📌 Lưu ý:</h2>
+                    <ul class="list-disc list-inside text-sm space-y-1 text-gray-700">
+                        <li>Đặt lịch <strong>CỐ ĐỊNH</strong> liên hệ: <a href="tel:0986390504"
+                                class="text-orange-600 hover:underline">0986.390.504</a></li>
+                        <li>Khung 18h–22h Thứ 2 - thứ 6 <strong>100k/1h</strong> (CỐ ĐỊNH).</li>
+                        <li>Khung 5h–17h Thứ 2 - thứ 6 hàng tuần giá ưu đãi <strong>49k/1h</strong>.</li>
+                        <li>T7–CN: <strong>89k/1h</strong></li>
+                    </ul>
+                </div>
+
+                <!-- Liên hệ -->
+                <div class="flex flex-col items-center sm:items-end">
+                    <span class="text-base font-semibold text-gray-700 mb-2">Liên hệ:</span>
+                    <div class="flex gap-5 text-[22px]">
+                        <a href="https://zalo.me/0986390504" target="_blank" title="Zalo"
+                            class="text-blue-500 hover:scale-110 transition"><i class="fas fa-comment-dots"></i></a>
+                        <a href="https://facebook.com/phuthinhbadminton" target="_blank" title="Facebook"
+                            class="text-blue-600 hover:scale-110 transition"><i class="fab fa-facebook"></i></a>
+                        <a href="tel:0986390504" title="Gọi điện" class="text-green-600 hover:scale-110 transition"><i
+                                class="fas fa-phone-alt"></i></a>
+                        <a href="https://maps.google.com/?q=Phú+Thịnh+Tân+Phú" target="_blank" title="Bản đồ"
+                            class="text-red-500 hover:scale-110 transition"><i class="fas fa-map-marked-alt"></i></a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Giỏ hàng -->
+        <div id="cart-display" class="hidden mb-4 bg-white p-4 rounded shadow-md">
+            <h2 class="text-lg font-semibold mb-2 text-orange-600">🧺 Sân đã đặt:</h2>
+            <ul id="cartList" class="space-y-1 text-sm text-gray-700"></ul>
+        </div>
+
+        <!-- Bảng sân -->
+        <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+            <div class="w-max">
+                <table id="courtTable" class="w-full text-sm text-center">
+                    <thead id="tableHead"></thead>
+                    <tbody id="courtTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Chú thích -->
+        <div class="flex justify-center gap-6 my-6 text-sm">
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-amber-200 mr-2 rounded"></div>Trống
+            </div>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-orange-500 mr-2 rounded"></div>Đã đặt
+            </div>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-gray-300 mr-2 rounded"></div>Khoá
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-between items-center mt-6">
+            <a href="#" class="text-orange-600 hover:underline font-semibold">📄 Xem sân & bảng giá</a>
+            <button id="nextButton"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl font-semibold shadow transition">TIẾP
+                THEO</button>
+        </div>
+        <!-- BẢNG GIÁ -->
+        <div class="mt-10 bg-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-bold text-orange-1000 mb-4">💰 BẢNG GIÁ</h2>
+            <img src="/images/banggia.jpg" alt="Bảng giá sân cầu lông"
+                class="mx-auto w-full max-w-[1000px] rounded-lg shadow">
+        </div>
+
+        <!-- HÌNH ẢNH SÂN -->
+        <div class="mt-8 bg-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-bold text-orange-600 mb-4">📸 HÌNH ẢNH SÂN</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <img src="/images/HINH SAN MOI/z5652417936781_7d2325a562c3b0d75e2625e2f9b15a81.jpg" alt=""
+                    class="rounded-lg shadow-md">
+                <img src="/images/HINH SAN MOI/z5810384463047_03a04349a478f85388d3d305d6ba73ba.jpg" alt=""
+                    class="rounded-lg shadow-md">
+                <img src="/images/HINH SAN MOI/z5791261379573_d00c293bee958a5dc7fb55c0d7988453.jpg" alt=""
+                    class="rounded-lg shadow-md">
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        const timePoints = Array.from({ length: 38 }, (_, i) => 5 + i * 0.5);
+        const timeSlots = timePoints;
+        const cartItems = [];
+
+        function formatHour(hour) {
+            const h = Math.floor(hour);
+            const m = hour % 1 === 0 ? '00' : '30';
+            return `${h}:${m}`;
+        }
+
+        function generateTimeHeaders() {
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '';
+            const row = document.createElement('tr');
+            row.className = 'bg-orange-100 text-gray-800';
+
+            const firstTh = document.createElement('th');
+            firstTh.className = 'p-3 text-left font-semibold';
+            firstTh.textContent = 'Sân';
+            row.appendChild(firstTh);
+
+            timeSlots.forEach(hour => {
+                const th = document.createElement('th');
+                th.className = 'p-2';
+                th.textContent = formatHour(hour);
+                row.appendChild(th);
+            });
+
+            // Thêm mốc 24:00 (chỉ header, không thêm ô dữ liệu)
+            const thLast = document.createElement('th');
+            thLast.className = 'p-2';
+            thLast.textContent = '24:00';
+            row.appendChild(thLast);
+
+            thead.appendChild(row);
+        }
+
+
+        function generateCourtRows() {
+            const tbody = document.getElementById('courtTableBody');
+            tbody.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const row = document.createElement('tr');
+                const courtName = `Sân ${i}`;
+                const firstTd = document.createElement('td');
+                firstTd.className = 'p-3 font-medium text-orange-600 whitespace-nowrap';
+                firstTd.textContent = courtName;
+                row.appendChild(firstTd);
+
+                timeSlots.forEach((hour, colIndex) => {
+                    const cell = document.createElement('td');
+                    const time = formatHour(hour);
+                    cell.className = 'p-2 text-center available';
+                    cell.innerHTML = '';
+                    cell.addEventListener('click', () => handleCellClick(cell, courtName, time));
+
+                    // Kiểm tra nếu đã được chọn trước đó
+                    const date = document.getElementById('dateFilter').value;
+                    if (cartItems.find(i => i.date === date && i.court === courtName && i.time === time)) {
+                        cell.classList.remove('available');
+                        cell.classList.add('booked');
+                        cell.innerHTML = '✅';
+                    }
+
+                    row.appendChild(cell);
+                });
+                tbody.appendChild(row);
+            }
+        }
+
+        function getCell(court, time) {
+            const rows = document.querySelectorAll('#courtTableBody tr');
+            for (const row of rows) {
+                if (row.children[0].textContent === court) {
+                    const colIndex = timeSlots.findIndex(t => formatHour(t) === time);
+                    return row.children[colIndex + 1];
+                }
+            }
+            return null;
+        }
+        // //gọi API để lấy trạng thái sân
+        // function updateTrangThaiSan() {
+        //     const date = document.getElementById('dateFilter').value;
+
+        //     fetch(`/San/GetTrangThai?ngay=${date}`)
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             // Reset all cells first
+        //             document.querySelectorAll('#courtTableBody tr').forEach(row => {
+        //                 for (let i = 1; i < row.children.length; i++) {
+        //                     const cell = row.children[i];
+        //                     cell.classList.remove('booked', 'locked');
+        //                     if (!cell.classList.contains('p-3')) {
+        //                         cell.classList.add('available');
+        //                         cell.innerHTML = '';
+        //                     }
+        //                 }
+        //             });
+
+        //             // Update based on API result
+        //             data.forEach(item => {
+        //                 const cell = getCell(item.court, item.time);
+        //                 if (cell) {
+        //                     cell.classList.remove('available');
+        //                     cell.classList.add(item.status);
+        //                     cell.innerHTML = item.status === 'booked' ? '✅' :
+        //                         item.status === 'locked' ? '🔒' : '';
+        //                 }
+        //             });
+        //         });
+        // }
+        function updateTrangThaiSan() {
+            const data = bookingData; // lấy từ Razor ViewBag
+
+            // Reset all cells
+            document.querySelectorAll('#courtTableBody tr').forEach(row => {
+                for (let i = 1; i < row.children.length; i++) {
+                    const cell = row.children[i];
+                    cell.classList.remove('booked', 'locked');
+                    if (!cell.classList.contains('p-3')) {
+                        cell.classList.add('available');
+                        cell.innerHTML = '';
+                    }
+                }
+            });
+
+            // Cập nhật trạng thái
+            data.forEach(item => {
+                const cell = getCell(item.court, item.time);
+                if (cell) {
+                    cell.classList.remove('available');
+                    cell.classList.add(item.status);
+                    cell.innerHTML = item.status === 'booked' ? '✅' : '';
+                }
+            });
+        }
+
+        // Gọi mỗi 3 giây
+        setInterval(updateTrangThaiSan, 3000);
+        function handleCellClick(cell, court, time) {
+            const date = document.getElementById('dateFilter').value;
+            if (cell.classList.contains('locked')) return;
+            const hour = parseFloat(time.replace(':', '.5'));
+
+            if (hour >= 18 && hour < 22) {
+                const groupStart = hour < 20 ? 18 : 20;
+                const group = [0, 0.5, 1, 1.5].map(off => groupStart + off);
+                const validSlots = group.filter(h => {
+                    const t = formatHour(h);
+                    const c = getCell(court, t);
+                    return c && !c.classList.contains('locked');
+                });
+
+                const allSelected = validSlots.every(h =>
+                    cartItems.find(i => i.key === `${date}-${court}-${formatHour(h)}`)
+                );
+
+                validSlots.forEach(h => {
+                    const key = `${date}-${court}-${formatHour(h)}`;
+                    const cell = getCell(court, formatHour(h));
+                    if (allSelected) {
+                        const idx = cartItems.findIndex(i => i.key === key);
+                        if (idx !== -1) cartItems.splice(idx, 1);
+                        if (cell) {
+                            cell.classList.remove('booked');
+                            cell.classList.add('available');
+                            cell.innerHTML = '';
+                        }
+                    } else {
+                        if (!cartItems.find(i => i.key === key)) {
+                            cartItems.push({ key, date, court, time: formatHour(h) });
+                            if (cell) {
+                                cell.classList.remove('available');
+                                cell.classList.add('booked');
+                                cell.innerHTML = '✅';
+                            }
+                        }
+                    }
+                });
+                renderCart();
+                return;
+            }
+
+            const key = `${date}-${court}-${time}`;
+            const idx = cartItems.findIndex(i => i.key === key);
+            if (idx !== -1) {
+                cartItems.splice(idx, 1);
+                cell.classList.remove('booked');
+                cell.classList.add('available');
+                cell.innerHTML = '';
+            } else {
+                cartItems.push({ key, date, court, time });
+                cell.classList.remove('available');
+                cell.classList.add('booked');
+                cell.innerHTML = '✅';
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartDiv = document.getElementById('cart-display');
+            const cartList = document.getElementById('cartList');
+            if (cartItems.length === 0) {
+                cartDiv.classList.add('hidden');
+                return;
+            }
+            cartDiv.classList.remove('hidden');
+
+            const grouped = {};
+            cartItems.forEach(item => {
+                const key = `${item.date}||${item.court}`;
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(item.time);
+            });
+
+            const lines = [];
+            for (const k in grouped) {
+                const [date, court] = k.split('||');
+                const times = grouped[k]
+                    .map(t => {
+                        const [h, m] = t.split(':').map(Number);
+                        return h + (m === 30 ? 0.5 : 0);
+                    })
+                    .sort((a, b) => a - b);
+
+                let i = 0;
+                while (i < times.length) {
+                    const start = times[i];
+                    let end = start;
+                    while (i + 1 < times.length && times[i + 1] === end + 0.5) {
+                        end += 0.5;
+                        i++;
+                    }
+                    const fmt = t => `${Math.floor(t)}:${t % 1 === 0 ? '00' : '30'}`;
+                    const weekday = new Date(date).toLocaleDateString('vi-VN', { weekday: 'long' });
+                    const formattedDate = new Date(date).toLocaleDateString('vi-VN');
+                    lines.push(`🔸 ${weekday}, ${formattedDate} - ${court} - ${fmt(start)} → ${fmt(end + 0.5)}`);
+
+                    i++;
+                }
+            }
+
+            cartList.innerHTML = lines.map(line => `<li>${line}</li>`).join('');
+        }
+
+        function lockPastTimeSlots() {
+            const selectedDate = document.getElementById('dateFilter').value;
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const nowHour = now.getHours() + now.getMinutes() / 60;
+
+            document.querySelectorAll('#courtTableBody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                for (let i = 1; i < cells.length; i++) {
+                    const hour = timeSlots[i - 1];
+
+                    // Nếu là ngày trước hôm nay → khóa toàn bộ
+                    if (selectedDate < today || (selectedDate === today && hour <= nowHour)) {
+                        cells[i].classList.remove('available', 'booked');
+                        cells[i].classList.add('locked');
+                        cells[i].innerHTML = '🔒';
+                    }
+                }
+            });
+        }
+
+
+        // Khởi động
+        window.onload = () => {
+            document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+            generateTimeHeaders();
+            generateCourtRows();
+            lockPastTimeSlots();
+            renderCart();
+        };
+
+        document.getElementById('dateFilter').addEventListener('change', () => {
+            generateCourtRows();
+            lockPastTimeSlots();
+            renderCart();
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (cartItems.length === 0) {
+                alert('Vui lòng chọn ít nhất 1 khung giờ.');
+                return;
+            }
+            console.log('Danh sách đã đặt:', cartItems);
+            alert(`Đã gửi ${cartItems.length} khung giờ!`);
+        });
+    </script>
+</body>
+
+</html>

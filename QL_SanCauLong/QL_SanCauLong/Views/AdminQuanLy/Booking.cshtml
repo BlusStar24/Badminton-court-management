@@ -1,0 +1,616 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Quản lý đặt sân";
+}
+
+<h1 class="text-2xl font-bold mb-4">📅 Quản lý đặt sân</h1>
+<style>
+    .selected-cell {
+        background-color: #fef08a; /* màu vàng nhạt */
+        outline: 2px dashed #facc15;
+    }
+
+    .custom-cell {
+        user-select: none;
+    }
+    /* Ngăn người dùng chọn văn bản khi kéo chuột */
+    #bookingTable,
+    #bookingTable th,
+    #bookingTable td,
+    .custom-cell {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+    }
+
+    #platformDropdown {
+        min-width: 150px;
+    }
+    .status-btn.active {
+        font-weight: bold;
+        box-shadow: 0 0 0 2px #00000020;
+    }
+</style>
+
+<!-- Form nhập dữ liệu -->
+<div class="w-full">
+    <div class="bg-white p-6 rounded shadow mb-6 space-y-6 w-full max-w-xl ml-6 min-h-[400px]">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tên + dropdown -->
+            <div class="relative">
+                <input id="nameInput" type="text" placeholder="Tên khách hàng"
+                       class="w-full border rounded px-3 py-2 pr-8" />
+
+                <button type="button" onclick="togglePlatformDropdown()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600">
+                    ▼
+                </button>
+
+                <ul id="platformDropdown"
+                    class="absolute z-10 right-0 mt-1 w-full bg-white border rounded shadow hidden">
+                    <li onclick="appendPlatform('zalo')"
+                        class="px-3 py-2 hover:bg-blue-100 cursor-pointer">Zalo</li>
+                    <li onclick="appendPlatform('facebook')"
+                        class="px-3 py-2 hover:bg-blue-100 cursor-pointer">Facebook</li>
+                </ul>
+            </div>
+
+            <!-- Số điện thoại -->
+            <input id="phoneInput" type="text" placeholder="Số điện thoại">
+
+            <!-- Ghi chú màu -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 col-span-2 text-sm">
+                <div class="flex items-center gap-2 cursor-pointer type-option" data-type="giờ chẵn" title="Giờ chẵn">
+                    <div class="w-5 h-5 bg-green-400 border rounded"></div>
+                    <span>Giờ chẵn</span>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer type-option" data-type="giờ lẻ" title="Giờ lẻ">
+                    <div class="w-5 h-5 bg-yellow-400 border rounded"></div>
+                    <span>Giờ lẻ</span>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer type-option" data-type="pass sân" title="Pass sân">
+                    <div class="w-5 h-5 bg-red-400 border rounded"></div>
+                    <span>Pass sân</span>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer type-option" data-type="cố định" title="Cố định">
+                    <div class="w-5 h-5 bg-blue-400 border rounded"></div>
+                    <span>Cố định</span>
+                </div>
+            </div>
+            <!-- Trạng thái thanh toán -->
+            <div class="flex items-center gap-3 col-span-2 mt-2">
+                <span class="font-semibold">💰 Trạng thái:</span>
+
+                <button id="statusUnpaidBtn"
+                        class="status-btn px-3 py-1 rounded border text-red-600 border-red-500 hover:bg-red-100"
+                        onclick="setPaymentStatus(false)">
+                    ❌ Chưa thanh toán
+                </button>
+
+                <button id="statusPaidBtn"
+                        class="status-btn px-3 py-1 rounded border text-green-600 border-green-500 hover:bg-green-100"
+                        onclick="setPaymentStatus(true)">
+                    ✅ Đã thanh toán
+                </button>
+            </div>
+        </div>
+        <div class="flex gap-4 items-center">
+            <button onclick="submitBookingForm()" class="bg-blue-600 text-white px-4 py-2 rounded">
+                Tạo Lịch / Cập nhật
+            </button>
+
+            <button onclick="deleteSelectedBookings()" class="bg-red-600 text-white px-4 py-2 rounded">
+                🗑️ Xóa lịch đã chọn
+            </button>
+        </div>
+        <div class="mb-4 ml-6">
+            <label class="mr-2 font-semibold">🕒 Lọc theo khung giờ:</label>
+            <select id="multiHourSelect" multiple class="border p-2 rounded w-[300px]">
+                <!-- Sẽ thêm option bằng JS -->
+            </select>
+        </div>
+        <div class="flex gap-4 items-center">
+            <select id="monthSelect" class="p-2 border rounded"></select>
+            <select id="yearSelect" class="p-2 border rounded"></select>
+            <button onclick="renderBookingTable()" class="bg-blue-600 text-white px-4 py-2 rounded">
+                Xem lịch
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bảng lịch -->
+<div class="border rounded overflow-x-auto">
+    <table id="bookingTable" class="min-w-[1400px] table-auto border border-gray-300 bg-white text-sm select-none">
+        <thead class="bg-gray-100 text-gray-700" id="thead"></thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+       
+        // Hàm định dạng giờ
+        function formatTime(hour) {
+            const h = String(Math.floor(hour)).padStart(2, '0');
+            const m = hour % 1 === 0.5 ? '30' : '00';
+            return `${h}:${m}`;
+        }
+
+        // Hàm định dạng ngày tháng năm
+        function formatDateToYMD(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        // Hàm hiển thị/ẩn dropdown nền tảng
+        function togglePlatformDropdown() {
+            const dropdown = document.getElementById('platformDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function appendPlatform(platform) {
+            const nameInput = document.getElementById('nameInput');
+            const baseName = nameInput.value.trim().replace(/\s+(zalo|facebook)$/i, '');
+            nameInput.value = `${baseName} ${platform}`;
+            document.getElementById('platformDropdown').classList.add('hidden');
+        }
+
+        let isMouseDown = false;
+        let selectedCells = [];
+        let lastClickTime = 0;
+
+        // Hàm chọn/bỏ chọn ô
+        function toggleCellSelection(cell, isCtrlPressed) {
+            if (isCtrlPressed) {
+                if (!cell.classList.contains('selected-cell')) {
+                    cell.classList.add('selected-cell');
+                    selectedCells.push(cell);
+
+                    // Gán loại đang chọn và tô màu luôn
+                    cell.dataset.type = selectedType;
+                    if (selectedType === "pass sân") cell.style.backgroundColor = "#f87171";
+                    else if (selectedType === "cố định") cell.style.backgroundColor = "#60a5fa";
+                    else if (selectedType === "giờ chẵn") cell.style.backgroundColor = "#86efac";
+                    else if (selectedType === "giờ lẻ") cell.style.backgroundColor = "#fde68a";
+                    else cell.style.backgroundColor = "";
+                }
+            } else {
+                if (cell.classList.contains('selected-cell')) {
+                    cell.classList.remove('selected-cell');
+                    selectedCells = selectedCells.filter(c => c !== cell);
+                }
+            }
+        }
+
+        // Bỏ chọn tất cả ô
+        function clearSelection() {
+            selectedCells.forEach(c => c.classList.remove('selected-cell'));
+            selectedCells = [];
+        }
+        let selectedType = 'vãng lai'; // mặc định
+
+        document.querySelectorAll('.type-option').forEach(el => {
+            el.addEventListener('click', () => {
+                const clickedType = el.dataset.type;
+
+                if (selectedType === clickedType) {
+                    // Nếu bấm lại đúng màu đang chọn → xóa màu các ô
+                    selectedCells.forEach(cell => {
+                        cell.dataset.type = "";
+                        cell.style.backgroundColor = "";
+                    });
+                    selectedType = "";
+                    return;
+                }
+
+                // Nếu chọn loại mới → tô màu
+                selectedType = clickedType;
+                selectedCells.forEach(cell => {
+                    cell.dataset.type = selectedType;
+                    if (selectedType === "pass sân") cell.style.backgroundColor = "#f87171";
+                    else if (selectedType === "cố định") cell.style.backgroundColor = "#60a5fa";
+                    else if (selectedType === "giờ chẵn") cell.style.backgroundColor = "#86efac";
+                    else if (selectedType === "giờ lẻ") cell.style.backgroundColor = "#fde68a";
+                });
+            });
+        });
+
+        let selectedPaymentStatus = false; // ✅ mặc định là chưa thanh toán
+
+        //trạng thái thanh toán
+        function setPaymentStatus(status) {
+            selectedPaymentStatus = status;
+
+            const paidBtn = document.getElementById("statusPaidBtn");
+            const unpaidBtn = document.getElementById("statusUnpaidBtn");
+
+            if (status) {
+                paidBtn.classList.add("bg-green-500", "text-white");
+                unpaidBtn.classList.remove("bg-red-500", "text-white");
+            } else {
+                unpaidBtn.classList.add("bg-red-500", "text-white");
+                paidBtn.classList.remove("bg-green-500", "text-white");
+            }
+        }
+
+        //đánh dấu trạng thái thanh toán
+        function markAsPaid(bookingId, btnElement) {
+            if (!confirm("Bạn có chắc muốn đánh dấu đã thanh toán?")) return;
+
+            $.ajax({
+                url: '/AdminQuanLy/MarkAsPaid',
+                method: 'POST',
+                data: { bookingId: bookingId },
+                success: function (res) {
+                    if (res.success) {
+                        alert("✅ Đã cập nhật trạng thái thanh toán.");
+                        // Làm mờ nút hoặc đổi màu chữ
+                        const container = btnElement.parentElement;
+                        container.classList.remove("text-red-600");
+                        container.classList.add("text-black");
+                        btnElement.remove(); // ẩn nút
+                    } else {
+                        alert("❌ Lỗi: " + res.message);
+                    }
+                },
+                error: function (xhr) {
+                    alert("❌ Lỗi server: " + xhr.responseText);
+                }
+            });
+        }
+        // Xóa ôô  đđãã  đđặặtt  llịịcchh
+        function deleteSelectedBookings() {
+            const cellsWithId = selectedCells.filter(c => c.dataset.bookingId);
+
+            // Lấy unique bookingId
+            const idsToDelete = [...new Set(cellsWithId.map(c => parseInt(c.dataset.bookingId)))];
+
+            console.log("✅ IDs to delete (unique):", idsToDelete);
+
+            if (idsToDelete.length === 0) {
+                alert("❌ Không có lịch nào được chọn để xóa (hoặc đã bị xóa trước đó).");
+                return;
+            }
+
+            if (!confirm("Bạn có chắc muốn xóa những lịch này không?")) return;
+
+            $.ajax({
+                url: '/AdminQuanLy/DeleteBookings',
+                method: 'POST',
+                contentType: 'application/json',
+                dataType: 'json', // <- thêm dòng này
+                data: JSON.stringify(idsToDelete),
+                success: function (res) {
+                    console.log("🔄 Server response:", res);
+                    if (res.success === true) {
+                        alert("✅ Xóa thành công!");
+                        clearSelection();
+                        setTimeout(() => {
+                            renderBookingTable();
+                        }, 300);
+                    } else {
+                        alert("❌ Lỗi khi xóa lịch: " + (res.message || "Không rõ lỗi"));
+                        console.warn("❗ Server said:", res);
+                    }
+                },
+                error: function (xhr) {
+                    console.error("❌ AJAX error:", xhr.responseText);
+                    alert("❌ Lỗi server: " + xhr.responseText);
+                }
+            });
+        }
+        // Hàm gửi form đặt sân
+        function submitBookingForm() {
+            const name = document.getElementById('nameInput')?.value.trim();
+            const phone = document.getElementById('phoneInput')?.value.trim();
+            const isPaid = selectedPaymentStatus;
+
+            if (!name) {
+                alert('Vui lòng nhập tên!');
+                return;
+            }
+
+            if (selectedCells.length === 0) {
+                alert('Bạn chưa chọn ô nào.');
+                return;
+            }
+
+            const bookings = selectedCells.map(cell => {
+                const courtId = parseInt(cell.dataset.court);
+                const date = cell.dataset.date;
+                const start = parseFloat(cell.dataset.hour);
+                const end = start + 0.5;
+                const start_time = formatTime(start);
+                const end_time = formatTime(end);
+
+                let type = cell.dataset.type || selectedType;
+                if (type === "giờ chẵn" || type === "giờ lẻ") {
+                    type = "vãng lai";
+                }
+
+                return {
+                    court_id: courtId,
+                    date,
+                    start_time,
+                    end_time,
+                    type,
+                    is_paid: isPaid
+                };
+            });
+
+            const payload = { name, phone, bookings };
+
+            $.ajax({
+                url: '/AdminQuanLy/UpdateBookingsWithCustomer',
+                method: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify(payload),
+                error: function (xhr) {
+                    alert("❌ Lỗi server: " + xhr.responseText);
+                },
+                success: function (res) {
+                    console.log("📩 Phản hồi từ server:", res);
+
+                    if (res.success) {
+                        alert("✅ Cập nhật lịch thành công!");
+                        clearSelection?.();
+                        renderBookingTable?.();
+                        return;
+                    }
+
+                    if (res.conflict) {
+                        const useOld = confirm(`${res.message}\n\nBấm OK để dùng tên cũ: ${res.options[0]}\nBấm Cancel để dùng tên mới: ${res.options[1]}`);
+                        const finalName = useOld ? res.options[0] : res.options[1];
+
+                        // Gửi lại với tên được chọn
+                        $.ajax({
+                            url: '/AdminQuanLy/UpdateBookingsWithCustomer',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            data: JSON.stringify({ ...payload, name: finalName }),
+                            success: function (res2) {
+                                if (res2.success) {
+                                    alert("✅ Đã cập nhật với tên đã chọn.");
+                                    clearSelection?.();
+                                    renderBookingTable?.();
+                                } else {
+                                    alert("❌ Lỗi: " + (res2.message || "Không rõ lỗi"));
+                                }
+                            }
+                        });
+
+                        return;
+                    }
+
+                    alert("❌ Lỗi khi cập nhật: " + (res.message || "Không rõ lỗi"));
+                }
+            });
+        }
+
+        document.addEventListener('mousedown', e => {
+            if (!e.target.classList.contains('custom-cell')) return;
+
+            const now = new Date().getTime();
+            const timeSinceLastClick = now - lastClickTime;
+
+            // Nếu double click trong khoảng 300ms thì bỏ qua
+            if (timeSinceLastClick < 300) {
+                // Ngăn nháy đúp bắt đầu kéo chọn
+                e.preventDefault();
+                return;
+            }
+
+            lastClickTime = now;
+
+            isMouseDown = true;
+            toggleCellSelection(e.target, e.ctrlKey);
+        });
+
+        document.addEventListener('mouseover', e => {
+            if (isMouseDown && e.target.classList.contains('custom-cell')) {
+                toggleCellSelection(e.target, true); // giả lập giữ Ctrl khi kéo
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+        // Ngăn double click gây kéo chọn
+        document.addEventListener('dblclick', e => {
+            if (e.target.classList.contains('custom-cell')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+
+        // Khởi tạo dropdown đa chọn
+        const hourChoices = new Choices('#multiHourSelect', {
+            removeItemButton: true,
+            placeholderValue: 'Chọn khung giờ...',
+            searchEnabled: false
+        });
+
+        // Tạo danh sách giờ: 05:00 đến 23:30 mỗi 30 phút
+        const hourOptions = [];
+        for (let h = 5.0; h < 24; h += 0.5) {
+            const label = `${String(Math.floor(h)).padStart(2, '0')}h${h % 1 === 0.5 ? '30' : ''}`;
+            hourOptions.push({ value: h.toFixed(1), label });
+        }
+        hourChoices.setChoices(hourOptions, 'value', 'label', true);
+
+        function renderBookingTable() {
+            const numCourts = 6;
+            const startHour = 5;
+            const endHour = 24;
+
+            const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+            const selectedYear = parseInt(document.getElementById('yearSelect').value);
+
+            const dates = [];
+            const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const d = new Date(selectedYear, selectedMonth, i);
+                dates.push({
+                    date: formatDateToYMD(d),
+                    label: d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })
+                });
+            }
+
+            const thead = document.getElementById('thead');
+            const tbody = document.getElementById('tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const headRow = document.createElement('tr');
+            headRow.innerHTML = `<th class="border px-2 py-1">Sân</th><th class="border px-2 py-1">Khung giờ</th>`;
+            for (const d of dates) {
+                const th = document.createElement('th');
+                th.className = 'border px-3 py-2';
+                th.textContent = d.label;
+                th.dataset.date = d.date;
+                headRow.appendChild(th);
+            }
+            thead.appendChild(headRow);
+
+            for (let court = 1; court <= numCourts; court++) {
+                const courtClass = court % 2 === 0 ? 'court-even' : 'court-odd';
+
+                for (let hour = startHour; hour < endHour; hour += 0.5) {
+                    const tr = document.createElement('tr');
+                    tr.dataset.hour = hour.toFixed(1);
+
+                    const startLabel = Math.floor(hour) + (hour % 1 === 0.5 ? 'h30' : 'h');
+                    const endLabel = Math.floor(hour + 0.5) + ((hour + 0.5) % 1 === 0.5 ? 'h30' : 'h');
+
+                    tr.innerHTML = `
+                <td class="border px-2 py-1 font-bold text-blue-600 w-8 ${courtClass}">${court}</td>
+                <td class="border px-2 py-1 text-gray-700">${startLabel} - ${endLabel}</td>
+            `;
+
+                    for (const d of dates) {
+                        const td = document.createElement('td');
+                        td.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
+                        td.dataset.court = court;
+                        td.dataset.hour = hour.toFixed(1);
+                        td.dataset.date = d.date;
+                        td.dataset.type = selectedType;
+                        td.addEventListener('click', () => {
+                            console.log(`Đặt sân ${court}, giờ ${hour}, ngày ${d.date}`);
+                        });
+                        tr.appendChild(td);
+                    }
+                    tbody.appendChild(tr);
+                }
+            }
+
+            // Tải dữ liệu booking từ server
+            $.getJSON("/AdminQuanLy/GetBookings", {
+                month: selectedMonth + 1,
+                year: selectedYear
+            }, function (data) {
+                console.log("📦 Dữ liệu bookings vừa nhận:", data);
+
+                // 🧼 Làm sạch toàn bộ cell trước khi gán lại
+                document.querySelectorAll('.custom-cell').forEach(cell => {
+                    cell.innerHTML = "";
+                    cell.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
+                    delete cell.dataset.bookingId;
+                });
+
+                data.forEach(b => {
+                    const dateStr = b.date;
+                    const start = parseFloat(b.start_time);
+                    const end = parseFloat(b.end_time);
+                    const duration = end - start;
+
+                    let bgColor = "";
+                    if (b.type === "cố định") bgColor = "bg-blue-400";
+                    else if (b.type === "pass sân") bgColor = "bg-red-400";
+                    else {
+                        const isEven = (start % 1 === 0);
+                        bgColor = isEven ? "bg-green-400" : "bg-yellow-400";
+                    }
+
+                    for (let h = start; h < end; h += 0.5) {
+                        const hStr = h.toFixed(1);
+                        const selector = `td[data-court="${b.court_id}"][data-hour="${hStr}"][data-date="${dateStr}"]`;
+                        const cell = document.querySelector(selector);
+                        if (cell) {
+                            cell.dataset.bookingId = b.id;
+                            cell.classList.add(bgColor, "text-white");
+                            cell.classList.remove("hover:bg-green-100");
+
+                            if (h === start) {
+                                const name = b.customer_name || "Ẩn danh";
+                                const phone = b.customer_phone || "";
+                                const price = b.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                                const textColor = b.is_paid ? "text-black" : "text-red-600";
+
+                                cell.innerHTML = `<div class="${textColor} font-semibold">${name}<br/>${price}</div>`;
+
+                                // 👉 Gắn sự kiện click để hiện tên + sđt
+                                cell.addEventListener('click', () => {
+                                    document.getElementById("nameInput").value = name;
+                                    document.getElementById("phoneInput").value = phone;
+                                });
+                            } else {
+                                cell.innerHTML = "";
+                            }
+                        } else {
+                            console.warn("⚠️ Không tìm thấy ô cho:", selector);
+                        }
+                    }
+                });
+
+                console.log("✅ Bảng đã render lại đầy đủ sau khi xóa hoặc cập nhật.");
+            });
+        }
+
+        // Lọc bảng theo giờ được chọn
+        function filterBySelectedHours() {
+            const selectedHours = hourChoices.getValue(true); // array string ['5.0', '5.5', ...]
+            const rows = document.querySelectorAll('#tbody tr');
+            rows.forEach(row => {
+                const rowHour = row.dataset.hour;
+                row.style.display = selectedHours.length === 0 || selectedHours.includes(rowHour) ? '' : 'none';
+            });
+        }
+
+        // Gắn sự kiện lọc mỗi khi thay đổi dropdown
+        document.getElementById('multiHourSelect').addEventListener('change', filterBySelectedHours);
+        const oldRender = renderBookingTable;
+        renderBookingTable = function () {
+            oldRender(); // gọi lại hàm gốc
+            filterBySelectedHours(); // gọi lọc
+        };
+        window.onload = () => {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            const currentDate = new Date();
+
+            for (let m = 0; m < 12; m++) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = new Date(0, m).toLocaleString('vi-VN', { month: 'long' });
+                if (m === currentDate.getMonth()) opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+
+            for (let y = currentDate.getFullYear() - 1; y <= currentDate.getFullYear() + 1; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === currentDate.getFullYear()) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+
+            renderBookingTable();
+        };
+    </script>
+}

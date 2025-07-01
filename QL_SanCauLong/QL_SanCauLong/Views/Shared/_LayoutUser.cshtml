@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title ?? "Phú Thịnh Booking"</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" />
+
+    @RenderSection("styles", required: false)
+</head>
+<body class="bg-gray-50 text-gray-800 font-[Inter,sans-serif]">
+    @RenderBody()
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

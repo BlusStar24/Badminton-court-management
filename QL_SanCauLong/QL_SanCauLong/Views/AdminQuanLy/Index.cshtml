@@ -1,0 +1,63 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Trang chính";
+}
+
+<h1 class="text-2xl font-bold mb-4">📊 Tổng quan</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded shadow">
+        <h3 class="text-lg font-semibold mb-2">Tổng số lượt đặt sân</h3>
+        <p class="text-2xl font-bold text-blue-600">236 lượt</p>
+    </div>
+    <div class="bg-white p-6 rounded shadow">
+        <h3 class="text-lg font-semibold mb-2">Doanh thu hôm nay</h3>
+        <p class="text-2xl font-bold text-green-600">2.350.000₫</p>
+    </div>
+    <div class="bg-white p-6 rounded shadow">
+        <h3 class="text-lg font-semibold mb-2">Sân đang hoạt động</h3>
+        <p class="text-2xl font-bold text-yellow-600">5 / 9</p>
+    </div>
+</div>
+
+<!-- Biểu đồ -->
+<div class="bg-white mt-8 p-6 rounded shadow">
+    <h3 class="text-lg font-semibold mb-4">Biểu đồ lượt đặt theo ngày</h3>
+    <canvas id="bookingChart" width="400" height="200"></canvas>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('bookingChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'],
+                    datasets: [{
+                        label: 'Lượt đặt',
+                        data: [12, 19, 8, 15, 22, 30, 28],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+    </script>
+
+}
