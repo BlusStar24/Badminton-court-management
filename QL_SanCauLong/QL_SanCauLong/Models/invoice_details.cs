@@ -16,12 +16,14 @@ namespace QL_SanCauLong.Models
     {
         public int id { get; set; }
         public int invoice_id { get; set; }
-        public string item_name { get; set; }
         public int quantity { get; set; }
         public decimal unit_price { get; set; }
         public Nullable<decimal> total_price { get; set; }
         public Nullable<System.DateTime> created_at { get; set; }
+        public int item_id { get; set; }
+        public Nullable<bool> is_paid { get; set; }
     
         public virtual invoice invoice { get; set; }
+        public virtual mat_hang mat_hang { get; set; }
     }
 }

@@ -41,7 +41,7 @@ CREATE TABLE bookings (
     date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    type NVARCHAR(20) NOT NULL CHECK (type IN (N'giá chẳn', N'giá lẻ', N'pass sân', N'cố định')),
+    type NVARCHAR(20) NOT NULL CHECK (type IN (N'vãng lai', N'pass sân', N'cố định')),
     price DECIMAL(10,2) NOT NULL,
     created_at DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
@@ -49,6 +49,9 @@ CREATE TABLE bookings (
 );
 GO
 ALTER TABLE bookings ADD is_paid BIT DEFAULT 0;
+ALTER TABLE bookings
+ADD payment_method NVARCHAR(50) NULL;
+
 EXEC sp_help 'bookings';
 
 --Qui định giá
@@ -61,19 +64,40 @@ CREATE TABLE price_rules (
     price_per_hour DECIMAL(10,2)
 );
 
-
--- B?ng bán hàng
-CREATE TABLE sales (
+CREATE TABLE mat_hang (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    customer_id INT,
-    item_name VARCHAR(100) NOT NULL,
-    quantity INT NOT NULL,
-    unit_price DECIMAL(10,2) NOT NULL,
-    total_price AS (quantity * unit_price) PERSISTED,
-    created_at DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ten NVARCHAR(100) NOT NULL,             -- Ví dụ: "Nước suối"
+    don_vi_chinh NVARCHAR(20) NOT NULL,     -- Ví dụ: "chai"
+    don_vi_quy_doi NVARCHAR(20),            -- Ví dụ: "thùng"
+    so_luong_quy_doi INT DEFAULT 1,         -- Ví dụ: 24 (1 thùng = 24 chai)
+    gia_nhap DECIMAL(10,2) NOT NULL,        -- Theo đơn vị chính
+    gia_ban DECIMAL(10,2) NOT NULL,         -- Theo đơn vị chính
+    loai NVARCHAR(50),                      -- Ví dụ: "nước", "bánh"
+    created_at DATETIME DEFAULT GETDATE()
 );
-GO
+ALTER TABLE mat_hang
+ADD don_vi NVARCHAR(20) NULL;
+ALTER TABLE mat_hang
+ADD hinh_anh NVARCHAR(255) NULL;
+
+
+CREATE TABLE nhap_kho (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    item_id INT NOT NULL,
+    so_luong INT NOT NULL,
+    gia_nhap DECIMAL(10,2) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (item_id) REFERENCES mat_hang(id)
+);
+ALTER TABLE nhap_kho
+ADD don_vi NVARCHAR(20) NOT NULL DEFAULT N'chưa rõ';
+
+CREATE TABLE ton_kho (
+    item_id INT PRIMARY KEY,
+    so_luong_ton INT DEFAULT 0,
+    FOREIGN KEY (item_id) REFERENCES mat_hang(id)
+);
+
 
 -- B?ng l?ch làm
 CREATE TABLE work_schedule (
@@ -116,19 +140,116 @@ GO
 -- Đánh dấu hóa đơn là đã thanh toán
 ALTER TABLE invoices
 ADD is_paid BIT DEFAULT 0;
+ALTER TABLE invoices
+ADD payment_method NVARCHAR(50) NULL; -- Ví dụ: 'tiền mặt', 'chuyển khoản', 'momo'
+ALTER TABLE invoices
+ADD payment_image NVARCHAR(255) NULL; -- Lưu đường dẫn file
+
 
 CREATE TABLE invoice_details (
     id INT IDENTITY(1,1) PRIMARY KEY,
     invoice_id INT NOT NULL,
-    item_name NVARCHAR(100) NOT NULL,      -- vd: "Sân số 1", "Vợt cầu lông", "Nước suối"
+    item_id INT NOT NULL,                 -- liên kết với mat_hang
     quantity INT NOT NULL DEFAULT 1,
     unit_price DECIMAL(10,2) NOT NULL,
     total_price AS (quantity * unit_price) PERSISTED,
     created_at DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (invoice_id) REFERENCES invoices(id)
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id),
+    FOREIGN KEY (item_id) REFERENCES mat_hang(id)
 );
-GO
+--=======================================================================
+--Trigger sau khi nhập kho
+CREATE TRIGGER trg_nhap_kho_after_insert
+ON nhap_kho
+AFTER INSERT
+AS
+BEGIN
+    UPDATE ton_kho
+    SET so_luong_ton = ISNULL(so_luong_ton, 0) + i.so_luong
+    FROM ton_kho t
+    JOIN inserted i ON t.item_id = i.item_id;
 
+    -- Nếu chưa có trong tồn kho thì thêm mới
+    INSERT INTO ton_kho(item_id, so_luong_ton)
+    SELECT i.item_id, i.so_luong
+    FROM inserted i
+    WHERE NOT EXISTS (
+        SELECT 1 FROM ton_kho WHERE item_id = i.item_id
+    );
+END
+--==========================================================================================
+--Trigger sau khi bán hàng
+ALTER TRIGGER trg_nhap_kho_after_insert
+ON nhap_kho
+AFTER INSERT
+AS
+BEGIN
+    -- Tính số lượng quy đổi về đơn vị chính
+    UPDATE ton_kho
+    SET so_luong_ton = ISNULL(t.so_luong_ton, 0) +
+        (CASE 
+            WHEN i.don_vi = mh.don_vi_quy_doi THEN i.so_luong * mh.so_luong_quy_doi
+            ELSE i.so_luong
+        END)
+    FROM ton_kho t
+    JOIN inserted i ON t.item_id = i.item_id
+    JOIN mat_hang mh ON i.item_id = mh.id;
+
+    -- Thêm mới nếu chưa có
+    INSERT INTO ton_kho(item_id, so_luong_ton)
+    SELECT 
+        i.item_id, 
+        CASE 
+            WHEN i.don_vi = mh.don_vi_quy_doi THEN i.so_luong * mh.so_luong_quy_doi
+            ELSE i.so_luong
+        END
+    FROM inserted i
+    JOIN mat_hang mh ON i.item_id = mh.id
+    WHERE NOT EXISTS (SELECT 1 FROM ton_kho WHERE item_id = i.item_id);
+END
+--=============================================================================================================
+CREATE TRIGGER trg_ban_hang_after_insert
+ON invoice_details
+AFTER INSERT
+AS
+BEGIN
+    UPDATE ton_kho
+    SET so_luong_ton = ISNULL(so_luong_ton, 0) - i.quantity
+    FROM ton_kho t
+    JOIN inserted i ON t.item_id = i.item_id;
+END
+--============================================================================================================
+CREATE OR ALTER FUNCTION fn_xem_ton_kho_chi_tiet()
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        mh.id AS item_id,
+        mh.ten_hang,
+        mh.loai,
+        mh.don_vi_chinh,
+        mh.don_vi_quy_doi,
+        mh.so_luong_quy_doi,
+        mh.gia_nhap,
+        mh.gia_ban,
+        tk.so_luong_ton AS tong_so_luong_ton,
+        -- Tính số thùng
+        CASE 
+            WHEN mh.so_luong_quy_doi > 1 THEN FLOOR(tk.so_luong_ton * 1.0 / mh.so_luong_quy_doi)
+            ELSE NULL
+        END AS so_thung,
+        -- Số lẻ còn lại
+        CASE 
+            WHEN mh.so_luong_quy_doi > 1 THEN tk.so_luong_ton % mh.so_luong_quy_doi
+            ELSE tk.so_luong_ton
+        END AS le_don_vi
+    FROM ton_kho tk
+    JOIN mat_hang mh ON tk.item_id = mh.id
+);
+
+
+--====================================================================================================
 -- Thêm khách hàng
 INSERT INTO customers (name, phone, role) VALUES 
 (N'Nguy?n V?n A', '0901234567', N'customer'),
@@ -153,8 +274,8 @@ INSERT INTO employees (name, phone, position) VALUES
 
 -- Thêm l??t ??t sân
 INSERT INTO bookings (customer_id, court_id, date, start_time, end_time, type, price) VALUES
-(1, 1, '2025-06-28', '07:00:00', '08:30:00', N'gi? l?', 75000),
-(2, 2, '2025-06-28', '07:00:00', '08:00:00', N'gi? ch?n', 98000),
+(1, 1, '2025-06-28', '07:00:00', '08:30:00', N'vãng lai', 75000),
+(2, 2, '2025-06-28', '07:00:00', '08:00:00', N'cố định', 98000),
 (1, 3, '2025-06-28', '08:00:00', '09:00:00', N'pass sân', 50000);
 
 -- Thêm giao d?ch bán hàng
@@ -231,3 +352,33 @@ INSERT INTO price_rules (day_of_week, start_hour, end_hour, type, price_per_hour
 (6, 5, 17,	N'cố định', 89000),
 (6, 17, 18, N'cố định', 89000),
 (6, 18, 24, N'cố định', 89000);
+
+-- Dữ liệu cho type = 'vãng lai'
+INSERT INTO price_rules (day_of_week, start_hour, end_hour, type, price_per_hour) VALUES
+(0, 5, 17,	N'pass sân', 49000),
+(0, 17, 18, N'pass sân', 90000),
+(0, 18, 24, N'pass sân', 110000),
+			 
+(1, 5, 17,	N'pass sân', 49000),
+(1, 17, 18, N'pass sân', 90000),
+(1, 18, 24, N'pass sân', 110000),
+			
+(2, 5, 17,	N'pass sân', 49000),
+(2, 17, 18, N'pass sân', 90000),
+(2, 18, 24, N'pass sân', 110000),
+		
+(3, 5, 17,	N'pass sân', 49000),
+(3, 17, 18, N'pass sân', 90000),
+(3, 18, 24, N'pass sân', 110000),
+			 
+(4, 5, 17,	N'pass sân', 49000),
+(4, 17, 18, N'pass sân', 90000),
+(4, 18, 24, N'pass sân', 110000),
+			  
+(5, 5, 17,	N'pass sân', 49000),
+(5, 17, 18, N'pass sân', 90000),
+(5, 18, 24, N'pass sân', 110000),
+			 
+(6, 5, 17,	N'pass sân', 89000),
+(6, 17, 18, N'pass sân', 89000),
+(6, 18, 24, N'pass sân', 89000);

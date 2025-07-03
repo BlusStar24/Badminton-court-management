@@ -365,11 +365,13 @@
 
         // Gọi mỗi 3 giây
         setInterval(updateTrangThaiSan, 3000);
+
         // Gọi ngay khi trang tải
         function handleCellClick(cell, court, time) {
             const date = document.getElementById('dateFilter').value;
 
-            if (cell.classList.contains('locked')) return; // ✅ chỉ chặn ô bị locked
+            // ❌ Chặn nếu ô đã khóa hoặc đã được đặt từ DB
+            if (cell.classList.contains('locked') || (cell.classList.contains('booked') && !cell.dataset.manual)) return;
 
             const [h, m] = time.split(':').map(Number);
             const hour = h + (m === 30 ? 0.5 : 0);
@@ -391,7 +393,7 @@
                     const key = `${date}-${court}-${t}`;
                     const c = getCell(court, t);
 
-                    if (!c || c.classList.contains('locked')) return; // ✅ bỏ 'booked' ra khỏi đây
+                    if (!c || c.classList.contains('locked') || (c.classList.contains('booked') && !c.dataset.manual)) return;
 
                     const idx = cartItems.findIndex(i => i.key === key);
 
@@ -400,12 +402,14 @@
                         c.classList.remove('booked');
                         c.classList.add('available');
                         c.innerHTML = '';
+                        delete c.dataset.manual;
                     } else {
                         if (idx === -1) {
                             cartItems.push({ key, date, court, time: t });
                             c.classList.remove('available');
                             c.classList.add('booked');
                             c.innerHTML = '✅';
+                            c.dataset.manual = true;
                         }
                     }
                 });
@@ -422,15 +426,18 @@
                 cell.classList.remove('booked');
                 cell.classList.add('available');
                 cell.innerHTML = '';
+                delete cell.dataset.manual;
             } else {
                 cartItems.push({ key, date, court, time });
                 cell.classList.remove('available');
                 cell.classList.add('booked');
                 cell.innerHTML = '✅';
+                cell.dataset.manual = true;
             }
 
             renderCart();
         }
+
         //  
         function renderCart() {
             const cartDiv = document.getElementById('cart-display');
@@ -517,10 +524,10 @@
                 renderCart();
             });
         };
-
+        // nút tiếp theo
         document.getElementById('nextButton').addEventListener('click', () => {
-            if (cartItems.length === 0) {
-                alert('Vui lòng chọn ít nhất 1 khung giờ.');
+            if (cartItems.length < 2) {
+                alert('Vui lòng chọn ít nhất 1 giờ chơi.');
                 return;
             }
 
@@ -584,7 +591,6 @@
                 alert("⚠️ Trình duyệt đã chặn popup. Vui lòng bật cho phép popup cho trang này.");
             }
         }
-    </script>
 
-   
+    </script>
 }

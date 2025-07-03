@@ -12,16 +12,15 @@ namespace QL_SanCauLong.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class sales
+    public partial class nhap_kho
     {
         public int id { get; set; }
-        public Nullable<int> customer_id { get; set; }
-        public string item_name { get; set; }
-        public int quantity { get; set; }
-        public decimal unit_price { get; set; }
-        public Nullable<decimal> total_price { get; set; }
+        public int item_id { get; set; }
+        public int so_luong { get; set; }
+        public decimal gia_nhap { get; set; }
         public Nullable<System.DateTime> created_at { get; set; }
+        public string don_vi { get; set; }
     
-        public virtual customers customers { get; set; }
+        public virtual mat_hang mat_hang { get; set; }
     }
 }

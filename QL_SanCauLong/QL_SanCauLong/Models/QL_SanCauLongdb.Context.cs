@@ -12,6 +12,8 @@ namespace QL_SanCauLong.Models
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class QuanLySanCauLongdbEntities : DbContext
     {
@@ -31,9 +33,17 @@ namespace QL_SanCauLong.Models
         public virtual DbSet<employees> employees { get; set; }
         public virtual DbSet<price_rules> price_rules { get; set; }
         public virtual DbSet<salary> salary { get; set; }
-        public virtual DbSet<sales> sales { get; set; }
         public virtual DbSet<work_schedule> work_schedule { get; set; }
         public virtual DbSet<invoice_details> invoice_details { get; set; }
         public virtual DbSet<invoice> invoices { get; set; }
+        public virtual DbSet<mat_hang> mat_hang { get; set; }
+        public virtual DbSet<nhap_kho> nhap_kho { get; set; }
+        public virtual DbSet<ton_kho> ton_kho { get; set; }
+    
+        [DbFunction("QuanLySanCauLongdbEntities", "fn_xem_ton_kho_chi_tiet")]
+        public virtual IQueryable<fn_xem_ton_kho_chi_tiet_Result> fn_xem_ton_kho_chi_tiet()
+        {
+            return ((IObjectContextAdapter)this).ObjectContext.CreateQuery<fn_xem_ton_kho_chi_tiet_Result>("[QuanLySanCauLongdbEntities].[fn_xem_ton_kho_chi_tiet]()");
+        }
     }
 }

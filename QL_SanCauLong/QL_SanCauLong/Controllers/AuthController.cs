@@ -104,7 +104,7 @@ namespace QL_SanCauLong.Controllers
                 Session["UserRole"] = user.role;
 
                 // ✅ Redirect về trang admin từ cửa sổ chính
-                return Content("<script>window.opener.location.href='/AdminQuanLy/Index'; window.close();</script>", "text/html");
+                return Content("<script>window.opener.location.href='/ThongKe/Index'; window.close();</script>", "text/html");
             }
 
             // Nếu là user thường

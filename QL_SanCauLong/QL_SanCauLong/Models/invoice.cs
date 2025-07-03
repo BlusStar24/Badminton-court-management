@@ -26,6 +26,8 @@ namespace QL_SanCauLong.Models
         public string note { get; set; }
         public Nullable<System.DateTime> created_at { get; set; }
         public Nullable<bool> is_paid { get; set; }
+        public string payment_method { get; set; }
+        public string payment_image { get; set; }
     
         public virtual customers customer { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

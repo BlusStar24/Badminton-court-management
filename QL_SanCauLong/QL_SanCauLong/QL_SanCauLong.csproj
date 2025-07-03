@@ -120,13 +120,18 @@
       <DependentUpon>QL_SanCauLongdb.edmx</DependentUpon>
       <LastGenOutput>QL_SanCauLongdb.cs</LastGenOutput>
     </Content>
+    <Content Include="Scripts\Booking.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AdminQuanLyController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
+    <Compile Include="Controllers\QuanLyBanHangController.cs" />
     <Compile Include="Controllers\BookingController.cs" />
+    <Compile Include="Controllers\QuanLyHoaDontController.cs" />
+    <Compile Include="Controllers\QuanLyKhoHangController.cs" />
+    <Compile Include="Controllers\ThongKeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -140,13 +145,24 @@
     <Compile Include="Models\customers.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\employees.cs">
+      <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\fn_xem_ton_kho_chi_tiet_Result.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\invoice.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\invoice_details.cs">
+      <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\MatHangViewModel.cs" />
+    <Compile Include="Models\mat_hang.cs">
+      <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\nhap_kho.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\price_rules.cs">
@@ -170,7 +186,8 @@
     <Compile Include="Models\salary.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\sales.cs">
+    <Compile Include="Models\ThongBaoModel.cs" />
+    <Compile Include="Models\ton_kho.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\work_schedule.cs">
@@ -195,9 +212,12 @@
     <Content Include="Views\Auth\Register.cshtml" />
     <Content Include="Views\Auth\Login.cshtml" />
     <Content Include="Views\Shared\_Sidebar.cshtml" />
-    <Content Include="Views\AdminQuanLy\Index.cshtml" />
     <Content Include="Views\Shared\_LayoutUser.cshtml" />
     <Content Include="Views\AdminQuanLy\Booking.cshtml" />
+    <Content Include="Views\AdminQuanLy\thongbaotuWEB.cshtml" />
+    <Content Include="Views\QuanLyBanHang\BanHang.cshtml" />
+    <Content Include="Views\QuanLyKhoHang\Index.cshtml" />
+    <Content Include="Views\ThongKe\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -207,6 +227,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\QuanLyHoaDont\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

@@ -16,6 +16,7 @@
     <NavigationProperty Name="courts" Relationship="Self.FK__bookings__court___5AEE82B9" FromRole="bookings" ToRole="courts" />
     <NavigationProperty Name="customers" Relationship="Self.FK__bookings__custom__59FA5E80" FromRole="bookings" ToRole="customers" />
     <Property Name="is_paid" Type="Boolean" />
+    <Property Name="payment_method" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
   </EntityType>
   <EntityType Name="courts">
     <Key>
@@ -37,7 +38,6 @@
     <Property Name="role" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
     <Property Name="created_at" Type="DateTime" Precision="3" />
     <NavigationProperty Name="bookings" Relationship="Self.FK__bookings__custom__59FA5E80" FromRole="customers" ToRole="bookings" />
-    <NavigationProperty Name="sales" Relationship="Self.FK__sales__customer___4AB81AF0" FromRole="customers" ToRole="sales" />
     <Property Name="password" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
     <NavigationProperty Name="invoices" Relationship="QuanLySanCauLongModel.FK__invoices__custom__656C112C" FromRole="customers" ToRole="invoice" />
   </EntityType>
@@ -80,19 +80,6 @@
     <Property Name="created_at" Type="DateTime" Precision="3" />
     <NavigationProperty Name="employees" Relationship="Self.FK__salary__employee__5535A963" FromRole="salary" ToRole="employees" />
   </EntityType>
-  <EntityType Name="sales">
-    <Key>
-      <PropertyRef Name="id" />
-    </Key>
-    <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-    <Property Name="customer_id" Type="Int32" />
-    <Property Name="item_name" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
-    <Property Name="quantity" Type="Int32" Nullable="false" />
-    <Property Name="unit_price" Type="Decimal" Precision="10" Scale="2" Nullable="false" />
-    <Property Name="total_price" Type="Decimal" Precision="21" Scale="2" annotation:StoreGeneratedPattern="Computed" />
-    <Property Name="created_at" Type="DateTime" Precision="3" />
-    <NavigationProperty Name="customers" Relationship="Self.FK__sales__customer___4AB81AF0" FromRole="sales" ToRole="customers" />
-  </EntityType>
   <EntityType Name="work_schedule">
     <Key>
       <PropertyRef Name="id" />
@@ -130,18 +117,6 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="FK__sales__customer___4AB81AF0">
-    <End Role="customers" Type="Self.customers" Multiplicity="0..1" />
-    <End Role="sales" Type="Self.sales" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="customers">
-        <PropertyRef Name="id" />
-      </Principal>
-      <Dependent Role="sales">
-        <PropertyRef Name="customer_id" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
   <Association Name="FK__salary__employee__5535A963">
     <End Role="employees" Type="Self.employees" Multiplicity="1" />
     <End Role="salary" Type="Self.salary" Multiplicity="*" />
@@ -173,7 +148,6 @@
     <EntitySet Name="employees" EntityType="Self.employees" />
     <EntitySet Name="price_rules" EntityType="Self.price_rules" />
     <EntitySet Name="salary" EntityType="Self.salary" />
-    <EntitySet Name="sales" EntityType="Self.sales" />
     <EntitySet Name="work_schedule" EntityType="Self.work_schedule" />
     <AssociationSet Name="FK__bookings__court___5AEE82B9" Association="Self.FK__bookings__court___5AEE82B9">
       <End Role="courts" EntitySet="courts" />
@@ -182,10 +156,6 @@
     <AssociationSet Name="FK__bookings__custom__59FA5E80" Association="Self.FK__bookings__custom__59FA5E80">
       <End Role="customers" EntitySet="customers" />
       <End Role="bookings" EntitySet="bookings" />
-    </AssociationSet>
-    <AssociationSet Name="FK__sales__customer___4AB81AF0" Association="Self.FK__sales__customer___4AB81AF0">
-      <End Role="customers" EntitySet="customers" />
-      <End Role="sales" EntitySet="sales" />
     </AssociationSet>
     <AssociationSet Name="FK__salary__employee__5535A963" Association="Self.FK__salary__employee__5535A963">
       <End Role="employees" EntitySet="employees" />
@@ -205,6 +175,22 @@
       <End Role="invoice" EntitySet="invoices" />
       <End Role="invoice_details" EntitySet="invoice_details" />
     </AssociationSet>
+    <EntitySet Name="mat_hang" EntityType="QuanLySanCauLongModel.mat_hang" />
+    <EntitySet Name="nhap_kho" EntityType="QuanLySanCauLongModel.nhap_kho" />
+    <EntitySet Name="ton_kho" EntityType="QuanLySanCauLongModel.ton_kho" />
+    <AssociationSet Name="FK__invoice_d__item___76969D2E" Association="QuanLySanCauLongModel.FK__invoice_d__item___76969D2E">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="invoice_details" EntitySet="invoice_details" />
+    </AssociationSet>
+    <AssociationSet Name="FK__nhap_kho__item_i__70DDC3D8" Association="QuanLySanCauLongModel.FK__nhap_kho__item_i__70DDC3D8">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="nhap_kho" EntitySet="nhap_kho" />
+    </AssociationSet>
+    <AssociationSet Name="FK__ton_kho__item_id__7C4F7684" Association="QuanLySanCauLongModel.FK__ton_kho__item_id__7C4F7684">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="ton_kho" EntitySet="ton_kho" />
+    </AssociationSet>
+    <FunctionImport Name="fn_xem_ton_kho_chi_tiet" IsComposable="true" ReturnType="Collection(QuanLySanCauLongModel.fn_xem_ton_kho_chi_tiet_Result)" />
   </EntityContainer>
   <EntityType Name="invoice_details">
     <Key>
@@ -212,12 +198,14 @@
     </Key>
     <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
     <Property Name="invoice_id" Type="Int32" Nullable="false" />
-    <Property Name="item_name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
     <Property Name="quantity" Type="Int32" Nullable="false" />
     <Property Name="unit_price" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
     <Property Name="total_price" Type="Decimal" Precision="21" Scale="2" annotation:StoreGeneratedPattern="Computed" />
     <Property Name="created_at" Type="DateTime" Precision="3" />
     <NavigationProperty Name="invoice" Relationship="QuanLySanCauLongModel.FK__invoice_d__invoi__6A30C649" FromRole="invoice_details" ToRole="invoice" />
+    <Property Name="item_id" Type="Int32" Nullable="false" />
+    <NavigationProperty Name="mat_hang" Relationship="QuanLySanCauLongModel.FK__invoice_d__item___76969D2E" FromRole="invoice_details" ToRole="mat_hang" />
+    <Property Name="is_paid" Type="Boolean" />
   </EntityType>
   <EntityType Name="invoice">
     <Key>
@@ -231,6 +219,8 @@
     <Property Name="is_paid" Type="Boolean" />
     <NavigationProperty Name="customer" Relationship="QuanLySanCauLongModel.FK__invoices__custom__656C112C" FromRole="invoice" ToRole="customers" />
     <NavigationProperty Name="invoice_details" Relationship="QuanLySanCauLongModel.FK__invoice_d__invoi__6A30C649" FromRole="invoice" ToRole="invoice_details" />
+    <Property Name="payment_method" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="payment_image" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
   </EntityType>
   <Association Name="FK__invoices__custom__656C112C">
     <End Type="QuanLySanCauLongModel.customers" Role="customers" Multiplicity="1" />
@@ -256,4 +246,92 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
+  <EntityType Name="mat_hang">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="ten_hang" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+    <Property Name="gia_ban" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+    <Property Name="don_vi_chinh" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="don_vi_quy_doi" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="so_luong_quy_doi" Type="Int32" />
+    <Property Name="gia_nhap" Type="Decimal" Precision="10" Scale="2" />
+    <Property Name="loai" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="created_at" Type="DateTime" Precision="3" />
+    <NavigationProperty Name="invoice_details" Relationship="QuanLySanCauLongModel.FK__invoice_d__item___76969D2E" FromRole="mat_hang" ToRole="invoice_details" />
+    <NavigationProperty Name="nhap_kho" Relationship="QuanLySanCauLongModel.FK__nhap_kho__item_i__70DDC3D8" FromRole="mat_hang" ToRole="nhap_kho" />
+    <NavigationProperty Name="ton_kho" Relationship="QuanLySanCauLongModel.FK__ton_kho__item_id__7C4F7684" FromRole="mat_hang" ToRole="ton_kho" />
+    <Property Name="don_vi" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="hinh_anh" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="nhap_kho">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="item_id" Type="Int32" Nullable="false" />
+    <Property Name="so_luong" Type="Int32" Nullable="false" />
+    <Property Name="gia_nhap" Type="Decimal" Nullable="false" Precision="10" Scale="2" />
+    <Property Name="created_at" Type="DateTime" Precision="3" />
+    <NavigationProperty Name="mat_hang" Relationship="QuanLySanCauLongModel.FK__nhap_kho__item_i__70DDC3D8" FromRole="nhap_kho" ToRole="mat_hang" />
+    <Property Name="don_vi" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="ton_kho">
+    <Key>
+      <PropertyRef Name="item_id" />
+    </Key>
+    <Property Name="item_id" Type="Int32" Nullable="false" />
+    <Property Name="so_luong_ton" Type="Int32" />
+    <NavigationProperty Name="mat_hang" Relationship="QuanLySanCauLongModel.FK__ton_kho__item_id__7C4F7684" FromRole="ton_kho" ToRole="mat_hang" />
+  </EntityType>
+  <Association Name="FK__invoice_d__item___76969D2E">
+    <End Type="QuanLySanCauLongModel.mat_hang" Role="mat_hang" Multiplicity="1" />
+    <End Type="QuanLySanCauLongModel.invoice_details" Role="invoice_details" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="invoice_details">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__nhap_kho__item_i__70DDC3D8">
+    <End Type="QuanLySanCauLongModel.mat_hang" Role="mat_hang" Multiplicity="1" />
+    <End Type="QuanLySanCauLongModel.nhap_kho" Role="nhap_kho" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="nhap_kho">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__ton_kho__item_id__7C4F7684">
+    <End Type="QuanLySanCauLongModel.mat_hang" Role="mat_hang" Multiplicity="1" />
+    <End Type="QuanLySanCauLongModel.ton_kho" Role="ton_kho" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="ton_kho">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <ComplexType Name="fn_xem_ton_kho_chi_tiet_Result">
+    <Property Type="Int32" Name="item_id" Nullable="false" />
+    <Property Type="String" Name="ten_hang" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="loai" Nullable="true" MaxLength="50" />
+    <Property Type="String" Name="don_vi_chinh" Nullable="true" MaxLength="20" />
+    <Property Type="String" Name="don_vi_quy_doi" Nullable="true" MaxLength="20" />
+    <Property Type="Int32" Name="so_luong_quy_doi" Nullable="true" />
+    <Property Type="Decimal" Name="gia_nhap" Nullable="true" Precision="10" Scale="2" />
+    <Property Type="Decimal" Name="gia_ban" Nullable="false" Precision="10" Scale="2" />
+    <Property Type="Int32" Name="tong_so_luong_ton" Nullable="true" />
+    <Property Type="Decimal" Name="so_thung" Nullable="true" Precision="24" Scale="0" />
+    <Property Type="Int32" Name="le_don_vi" Nullable="true" />
+  </ComplexType>
 </Schema>

@@ -18,7 +18,6 @@ namespace QL_SanCauLong.Models
         public customers()
         {
             this.bookings = new HashSet<bookings>();
-            this.sales = new HashSet<sales>();
             this.invoices = new HashSet<invoice>();
         }
     
@@ -31,8 +30,6 @@ namespace QL_SanCauLong.Models
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<bookings> bookings { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<sales> sales { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<invoice> invoices { get; set; }
     }

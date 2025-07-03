@@ -4,6 +4,7 @@
     <EntitySetMapping Name="bookings">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.bookings">
         <MappingFragment StoreEntitySet="bookings">
+          <ScalarProperty Name="payment_method" ColumnName="payment_method" />
           <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="id" ColumnName="id" />
           <ScalarProperty Name="customer_id" ColumnName="customer_id" />
@@ -78,19 +79,6 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="sales">
-      <EntityTypeMapping TypeName="QuanLySanCauLongModel.sales">
-        <MappingFragment StoreEntitySet="sales">
-          <ScalarProperty Name="id" ColumnName="id" />
-          <ScalarProperty Name="customer_id" ColumnName="customer_id" />
-          <ScalarProperty Name="item_name" ColumnName="item_name" />
-          <ScalarProperty Name="quantity" ColumnName="quantity" />
-          <ScalarProperty Name="unit_price" ColumnName="unit_price" />
-          <ScalarProperty Name="total_price" ColumnName="total_price" />
-          <ScalarProperty Name="created_at" ColumnName="created_at" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
     <EntitySetMapping Name="work_schedule">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.work_schedule">
         <MappingFragment StoreEntitySet="work_schedule">
@@ -107,11 +95,12 @@
     <EntitySetMapping Name="invoice_details">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.invoice_details">
         <MappingFragment StoreEntitySet="invoice_details">
+          <ScalarProperty Name="is_paid" ColumnName="is_paid" />
+          <ScalarProperty Name="item_id" ColumnName="item_id" />
           <ScalarProperty Name="created_at" ColumnName="created_at" />
           <ScalarProperty Name="total_price" ColumnName="total_price" />
           <ScalarProperty Name="unit_price" ColumnName="unit_price" />
           <ScalarProperty Name="quantity" ColumnName="quantity" />
-          <ScalarProperty Name="item_name" ColumnName="item_name" />
           <ScalarProperty Name="invoice_id" ColumnName="invoice_id" />
           <ScalarProperty Name="id" ColumnName="id" />
         </MappingFragment>
@@ -120,6 +109,8 @@
     <EntitySetMapping Name="invoices">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.invoice">
         <MappingFragment StoreEntitySet="invoices">
+          <ScalarProperty Name="payment_image" ColumnName="payment_image" />
+          <ScalarProperty Name="payment_method" ColumnName="payment_method" />
           <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="created_at" ColumnName="created_at" />
           <ScalarProperty Name="note" ColumnName="note" />
@@ -129,5 +120,59 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
+    <EntitySetMapping Name="mat_hang">
+      <EntityTypeMapping TypeName="QuanLySanCauLongModel.mat_hang">
+        <MappingFragment StoreEntitySet="mat_hang">
+          <ScalarProperty Name="hinh_anh" ColumnName="hinh_anh" />
+          <ScalarProperty Name="don_vi" ColumnName="don_vi" />
+          <ScalarProperty Name="created_at" ColumnName="created_at" />
+          <ScalarProperty Name="loai" ColumnName="loai" />
+          <ScalarProperty Name="gia_nhap" ColumnName="gia_nhap" />
+          <ScalarProperty Name="so_luong_quy_doi" ColumnName="so_luong_quy_doi" />
+          <ScalarProperty Name="don_vi_quy_doi" ColumnName="don_vi_quy_doi" />
+          <ScalarProperty Name="don_vi_chinh" ColumnName="don_vi_chinh" />
+          <ScalarProperty Name="gia_ban" ColumnName="gia_ban" />
+          <ScalarProperty Name="ten_hang" ColumnName="ten_hang" />
+          <ScalarProperty Name="id" ColumnName="id" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="nhap_kho">
+      <EntityTypeMapping TypeName="QuanLySanCauLongModel.nhap_kho">
+        <MappingFragment StoreEntitySet="nhap_kho">
+          <ScalarProperty Name="don_vi" ColumnName="don_vi" />
+          <ScalarProperty Name="created_at" ColumnName="created_at" />
+          <ScalarProperty Name="gia_nhap" ColumnName="gia_nhap" />
+          <ScalarProperty Name="so_luong" ColumnName="so_luong" />
+          <ScalarProperty Name="item_id" ColumnName="item_id" />
+          <ScalarProperty Name="id" ColumnName="id" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="ton_kho">
+      <EntityTypeMapping TypeName="QuanLySanCauLongModel.ton_kho">
+        <MappingFragment StoreEntitySet="ton_kho">
+          <ScalarProperty Name="so_luong_ton" ColumnName="so_luong_ton" />
+          <ScalarProperty Name="item_id" ColumnName="item_id" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <FunctionImportMapping FunctionImportName="fn_xem_ton_kho_chi_tiet" FunctionName="QuanLySanCauLongModel.Store.fn_xem_ton_kho_chi_tiet">
+      <ResultMapping>
+        <ComplexTypeMapping TypeName="QuanLySanCauLongModel.fn_xem_ton_kho_chi_tiet_Result">
+          <ScalarProperty Name="item_id" ColumnName="item_id" />
+          <ScalarProperty Name="ten_hang" ColumnName="ten_hang" />
+          <ScalarProperty Name="loai" ColumnName="loai" />
+          <ScalarProperty Name="don_vi_chinh" ColumnName="don_vi_chinh" />
+          <ScalarProperty Name="don_vi_quy_doi" ColumnName="don_vi_quy_doi" />
+          <ScalarProperty Name="so_luong_quy_doi" ColumnName="so_luong_quy_doi" />
+          <ScalarProperty Name="gia_nhap" ColumnName="gia_nhap" />
+          <ScalarProperty Name="gia_ban" ColumnName="gia_ban" />
+          <ScalarProperty Name="tong_so_luong_ton" ColumnName="tong_so_luong_ton" />
+          <ScalarProperty Name="so_thung" ColumnName="so_thung" />
+          <ScalarProperty Name="le_don_vi" ColumnName="le_don_vi" />
+        </ComplexTypeMapping>
+      </ResultMapping>
+    </FunctionImportMapping>
   </EntityContainerMapping>
 </Mapping>

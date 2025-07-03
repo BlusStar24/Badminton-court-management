@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -109,7 +110,7 @@ namespace QL_SanCauLong.Controllers
                 return Json(new { success = false, message = ex.Message, stackTrace = ex.StackTrace });
             }
         }
-
+        //===========================================================================================================================
         [HttpPost]
         public JsonResult UpdateBookingsWithCustomer(BookingViewModel model)
         {
@@ -135,9 +136,9 @@ namespace QL_SanCauLong.Controllers
                         options = new[] { samePhone.name, name }
                     });
                 }
-
+              
                 customers customer = samePhone ?? sameName;
-
+               
                 if (customer == null)
                 {
                     customer = new customers
@@ -157,7 +158,6 @@ namespace QL_SanCauLong.Controllers
                     db.SaveChanges();
                 }
 
-                // Gộp giờ liên tiếp và cộng giá
                 var grouped = bookings
                     .Select(b => new
                     {
@@ -165,7 +165,7 @@ namespace QL_SanCauLong.Controllers
                         date = DateTime.Parse(b.date).Date,
                         start = TimeSpan.Parse(b.start_time),
                         end = TimeSpan.Parse(b.end_time),
-                        b.type,
+                        type = (b.type ?? "").Trim().ToLower(),
                         b.is_paid
                     })
                     .GroupBy(g => new { g.court_id, g.date, g.type })
@@ -185,16 +185,21 @@ namespace QL_SanCauLong.Controllers
                             double duration = (current.end - current.start).TotalHours;
                             int dow = (int)g.Key.date.DayOfWeek;
 
-                            var rule = db.price_rules.FirstOrDefault(r =>
-                                r.day_of_week == dow &&
-                                r.type == g.Key.type &&
-                                r.start_hour <= current.start.TotalHours &&
-                                r.end_hour > current.start.TotalHours);
+                            decimal price = 0;
 
-                            if (rule == null)
-                                throw new Exception($"Không có bảng giá cho loại '{g.Key.type}' lúc {current.start} ngày {g.Key.date:dd/MM}");
+                            if (g.Key.type == "vãng lai" || g.Key.type == "cố định" || g.Key.type == "pass sân")
+                            {
+                                var rule = db.price_rules.FirstOrDefault(r =>
+                                    r.day_of_week == dow &&
+                                    r.type == g.Key.type &&
+                                    r.start_hour <= current.start.TotalHours &&
+                                    r.end_hour > current.start.TotalHours);
 
-                            decimal price = (rule.price_per_hour ?? 0) * (decimal)duration;
+                                if (rule == null)
+                                    throw new Exception($"Không có bảng giá cho loại '{g.Key.type}' lúc {current.start} ngày {g.Key.date:dd/MM}");
+
+                                price = (rule.price_per_hour ?? 0) * (decimal)duration;
+                            }
 
                             if (i == 0 || current.start == e)
                             {
@@ -228,32 +233,27 @@ namespace QL_SanCauLong.Controllers
                 var courtIds = grouped.Select(g => g.court_id).Distinct().ToList();
                 var allOld = db.bookings
                     .Where(b => courtIds.Contains(b.court_id))
-                    .ToList(); // thực hiện ToList() để có thể dùng .Date trong LINQ thường
+                    .ToList();
 
                 foreach (var b in grouped)
                 {
-                    var overlaps = allOld.Where(old =>
+                    var overlaps = db.bookings.Where(old =>
                         old.court_id == b.court_id &&
-                        old.date.Date == b.date &&
+                        old.date == b.date &&
                         (
                             (b.start_time >= old.start_time && b.start_time < old.end_time) ||
                             (b.end_time > old.start_time && b.end_time <= old.end_time) ||
                             (b.start_time <= old.start_time && b.end_time >= old.end_time)
                         )).ToList();
 
-                    foreach (var old in overlaps)
+                    if (overlaps.Any())
                     {
-                        if (old.customer_id == customer.id)
+                        string khungGio = $"{b.start_time:hh\\:mm} - {b.end_time:hh\\:mm}";
+                        return Json(new
                         {
-                            if (b.start_time == old.start_time && b.end_time == old.end_time)
-                                goto SkipBooking;
-                            else
-                                db.bookings.Remove(old);
-                        }
-                        else
-                        {
-                            db.bookings.Remove(old);
-                        }
+                            success = false,
+                            message = $"Khung giờ {khungGio} tại sân {b.court_id} ngày {b.date:dd/MM/yyyy} đã được đặt. Không thể cập nhật."
+                        });
                     }
 
                     db.bookings.Add(new bookings
@@ -268,8 +268,6 @@ namespace QL_SanCauLong.Controllers
                         is_paid = b.is_paid,
                         created_at = DateTime.Now
                     });
-
-                SkipBooking:;
                 }
 
                 db.SaveChanges();
@@ -280,6 +278,7 @@ namespace QL_SanCauLong.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        //============================================================================================================================
 
         //trạng thái thanh toán
         [HttpPost]
@@ -360,5 +359,56 @@ namespace QL_SanCauLong.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        public FileResult HienThiMinhChung(string file)
+        {
+            var path = Path.Combine(@"C:\Uploads\Invoices", file);
+            var mime = MimeMapping.GetMimeMapping(path);
+            return File(System.IO.File.ReadAllBytes(path), mime);
+        }
+
+        // Thông báo từ web
+        public ActionResult thongbaotuWEB(DateTime? from, DateTime? to)
+        {
+            var ds = ThongBaoModel.DanhSachThongBao;
+
+            if (from.HasValue)
+                ds = ds.Where(tb => DateTime.Parse(tb.NgayTao).Date >= from.Value.Date).ToList();
+            if (to.HasValue)
+                ds = ds.Where(tb => DateTime.Parse(tb.NgayTao).Date <= to.Value.Date).ToList();
+
+            // Gán thêm đường dẫn ảnh từ bảng invoices
+            foreach (var tb in ds)
+            {
+                var customer = db.customers.FirstOrDefault(c => c.phone == tb.SoDienThoai);
+                if (customer != null)
+                {
+                    var invoice = db.invoices
+                        .Where(i => i.customer_id == customer.id)
+                        .OrderByDescending(i => i.created_at)
+                        .FirstOrDefault();
+
+                    tb.MinhChungChuyenKhoan = invoice?.payment_image ?? "";
+                }
+            }
+            return View(ds);
+        }
+
+        [HttpPost]
+        public ActionResult XoaThongBao(int id)
+        {
+            var tb = ThongBaoModel.DanhSachThongBao.FirstOrDefault(t => t.Id == id);
+            if (tb != null)
+            {
+                ThongBaoModel.DanhSachThongBao.Remove(tb);
+            }
+            return RedirectToAction("thongbaotuWEB");
+        }
+
+        public JsonResult DemThongBaoMoi()
+        {
+            var ds = ThongBaoModel.DanhSachThongBao;
+            return Json(new { count = ds.Count }, JsonRequestBehavior.AllowGet);
+        }
+
     }
 }
