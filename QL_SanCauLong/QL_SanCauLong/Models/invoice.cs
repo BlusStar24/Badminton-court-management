@@ -18,6 +18,7 @@ namespace QL_SanCauLong.Models
         public invoice()
         {
             this.invoice_details = new HashSet<invoice_details>();
+            this.bookings = new HashSet<bookings>();
         }
     
         public int id { get; set; }
@@ -32,5 +33,7 @@ namespace QL_SanCauLong.Models
         public virtual customers customer { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<invoice_details> invoice_details { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<bookings> bookings { get; set; }
     }
 }

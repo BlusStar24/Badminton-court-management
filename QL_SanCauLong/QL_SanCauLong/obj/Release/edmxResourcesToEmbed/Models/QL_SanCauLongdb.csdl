@@ -17,6 +17,8 @@
     <NavigationProperty Name="customers" Relationship="Self.FK__bookings__custom__59FA5E80" FromRole="bookings" ToRole="customers" />
     <Property Name="is_paid" Type="Boolean" />
     <Property Name="payment_method" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="invoice_id" Type="Int32" />
+    <NavigationProperty Name="invoice" Relationship="QuanLySanCauLongModel.FK_bookings_invoices" FromRole="bookings" ToRole="invoice" />
   </EntityType>
   <EntityType Name="courts">
     <Key>
@@ -191,6 +193,10 @@
       <End Role="ton_kho" EntitySet="ton_kho" />
     </AssociationSet>
     <FunctionImport Name="fn_xem_ton_kho_chi_tiet" IsComposable="true" ReturnType="Collection(QuanLySanCauLongModel.fn_xem_ton_kho_chi_tiet_Result)" />
+    <AssociationSet Name="FK_bookings_invoices" Association="QuanLySanCauLongModel.FK_bookings_invoices">
+      <End Role="invoice" EntitySet="invoices" />
+      <End Role="bookings" EntitySet="bookings" />
+    </AssociationSet>
   </EntityContainer>
   <EntityType Name="invoice_details">
     <Key>
@@ -205,6 +211,7 @@
     <NavigationProperty Name="invoice" Relationship="QuanLySanCauLongModel.FK__invoice_d__invoi__6A30C649" FromRole="invoice_details" ToRole="invoice" />
     <Property Name="item_id" Type="Int32" Nullable="false" />
     <NavigationProperty Name="mat_hang" Relationship="QuanLySanCauLongModel.FK__invoice_d__item___76969D2E" FromRole="invoice_details" ToRole="mat_hang" />
+    <Property Name="is_paid" Type="Boolean" />
   </EntityType>
   <EntityType Name="invoice">
     <Key>
@@ -219,6 +226,8 @@
     <NavigationProperty Name="customer" Relationship="QuanLySanCauLongModel.FK__invoices__custom__656C112C" FromRole="invoice" ToRole="customers" />
     <NavigationProperty Name="invoice_details" Relationship="QuanLySanCauLongModel.FK__invoice_d__invoi__6A30C649" FromRole="invoice" ToRole="invoice_details" />
     <Property Name="payment_method" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="payment_image" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="bookings" Relationship="QuanLySanCauLongModel.FK_bookings_invoices" FromRole="invoice" ToRole="bookings" />
   </EntityType>
   <Association Name="FK__invoices__custom__656C112C">
     <End Type="QuanLySanCauLongModel.customers" Role="customers" Multiplicity="1" />
@@ -332,4 +341,16 @@
     <Property Type="Decimal" Name="so_thung" Nullable="true" Precision="24" Scale="0" />
     <Property Type="Int32" Name="le_don_vi" Nullable="true" />
   </ComplexType>
+  <Association Name="FK_bookings_invoices">
+    <End Type="QuanLySanCauLongModel.invoice" Role="invoice" Multiplicity="0..1" />
+    <End Type="QuanLySanCauLongModel.bookings" Role="bookings" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="invoice">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="bookings">
+        <PropertyRef Name="invoice_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
 </Schema>

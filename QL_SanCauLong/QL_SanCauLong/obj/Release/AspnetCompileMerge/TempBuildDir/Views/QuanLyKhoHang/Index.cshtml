@@ -1,0 +1,132 @@
+﻿@model List<QL_SanCauLong.Models.MatHangViewModel>
+@{
+    ViewBag.Title = "Danh sách mặt hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var idDangSua = ViewBag.IdDangSua as int?;
+    var tonKhoList = new QL_SanCauLong.Models.QuanLySanCauLongdbEntities().fn_xem_ton_kho_chi_tiet().ToList();
+}
+<form id="formNhapKho" class="grid grid-cols-1 md:grid-cols-4 gap-4" method="post" action="@Url.Action("NhapKho", "QuanLyKhoHang")">
+    <select name="item_id" required class="border p-2 rounded text-sm col-span-2">
+        <option value="">-- Chọn mặt hàng --</option>
+        @foreach (var item in Model)
+        {
+            <option value="@item.id">@item.ten_hang</option>
+        }
+    </select>
+    <input name="so_luong" type="number" placeholder="Số lượng" required class="border p-2 rounded text-sm" />
+    <input name="gia_nhap" type="number" placeholder="Giá nhập" required class="border p-2 rounded text-sm" />
+    <input name="don_vi" type="text" placeholder="Đơn vị (VD: thùng, gói)" required class="border p-2 rounded text-sm" />
+    <div class="md:col-span-4 text-right">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+            Nhập kho
+        </button>
+    </div>
+</form>
+
+<div class="p-6 bg-white shadow-md rounded-lg">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Danh sách mặt hàng</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-200">
+            <thead class="bg-blue-600 text-white text-sm">
+                <tr>
+                    <th class="px-4 py-2 text-left">Tên hàng</th>
+                    <th class="px-4 py-2 text-left">Loại</th>
+                    <th class="px-4 py-2 text-left">Đơn vị</th>
+                    <th class="px-4 py-2 text-left">Quy đổi</th>
+                    <th class="px-4 py-2 text-left">Giá nhập</th>
+                    <th class="px-4 py-2 text-left">Giá bán</th>
+                    <th class="px-4 py-2 text-left">Tồn kho</th>
+                    <th class="px-4 py-2 text-center">Hành động</th>
+                    <th class="px-4 py-2 text-center">Xóa</th>
+                </tr>
+            </thead>
+            <tbody class="text-sm text-gray-800">
+                @foreach (var item in Model)
+                {
+                    if (idDangSua == item.id)
+                    {
+                        <tr class="border-b bg-yellow-50">
+                            <td colspan="9">
+                                <form method="post" action="@Url.Action("CapNhat", "QuanLyKhoHang")" class="grid grid-cols-9 gap-2 items-center">
+                                    <input type="hidden" name="id" value="@item.id" />
+                                    <input name="ten_hang" value="@item.ten_hang" class="border p-1 rounded" />
+                                    <input name="loai" value="@item.loai" class="border p-1 rounded" />
+                                    <input name="don_vi_chinh" value="@item.don_vi_chinh" class="border p-1 rounded" />
+                                    <div class="flex items-center gap-1">
+                                        <input name="so_luong_quy_doi" value="@item.so_luong_quy_doi" type="number" class="w-12 border p-1 rounded" />
+                                        /
+                                        <input name="don_vi_quy_doi" value="@item.don_vi_quy_doi" class="w-16 border p-1 rounded" />
+                                    </div>
+                                    <input name="gia_nhap" value="@item.gia_nhap" type="number" class="border p-1 rounded" />
+                                    <input name="gia_ban" value="@item.gia_ban" type="number" class="border p-1 rounded" />
+                                    <span class="text-right">@item.so_luong_ton</span>
+                                    <div class="flex gap-2 justify-center">
+                                        <button type="submit" class="text-green-600 hover:underline">Lưu</button>
+                                        <a href="@Url.Action("Index")" class="text-gray-500 hover:underline">Hủy</a>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr class="border-b hover:bg-gray-100 transition-colors">
+                            <td class="px-4 py-2">@item.ten_hang</td>
+                            <td class="px-4 py-2">@item.loai</td>
+                            <td class="px-4 py-2">@item.don_vi_chinh</td>
+                            <td class="px-4 py-2">
+                                @(item.don_vi_quy_doi != null ? $"{item.so_luong_quy_doi} / {item.don_vi_quy_doi}" : "-")
+                            </td>
+                            <td class="px-4 py-2 text-green-700">@String.Format("{0:N0}", item.gia_nhap) đ</td>
+                            <td class="px-4 py-2 text-blue-700">@String.Format("{0:N0}", item.gia_ban) đ</td>
+                            <td class="px-4 py-2 text-right">@item.so_luong_ton</td>
+                            <td class="px-4 py-2 text-center">
+                                <a href="@Url.Action("Index", new { idDangSua = item.id })" class="text-blue-500 hover:underline">Sửa</a>
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <form method="post" action="@Url.Action("Xoa", "QuanLyKhoHang")" onsubmit="return confirm('Xác nhận xóa?');" style="display:inline;">
+                                    <input type="hidden" name="id" value="@item.id" />
+                                    <button type="submit" class="text-red-500 hover:underline bg-transparent border-none">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mt-10 p-6 bg-white shadow-md rounded-lg">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Tồn kho chi tiết</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border border-gray-300 text-sm">
+            <thead class="bg-blue-600 text-white">
+                <tr>
+                    <th class="px-4 py-2 text-left">Tên hàng</th>
+                    <th class="px-4 py-2 text-left">Loại</th>
+                    <th class="px-4 py-2 text-left">Giá nhập</th>
+                    <th class="px-4 py-2 text-left">Giá bán</th>
+                    <th class="px-4 py-2 text-left">Tổng SL tồn</th>
+                    <th class="px-4 py-2 text-left">Thùng</th>
+                    <th class="px-4 py-2 text-left">Lẻ</th>
+                    <th class="px-4 py-2 text-left">Đơn vị</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in tonKhoList)
+                {
+                    <tr class="border-b hover:bg-gray-100 transition">
+                        <td class="px-4 py-2">@item.ten_hang</td>
+                        <td class="px-4 py-2">@item.loai</td>
+                        <td class="px-4 py-2 text-green-700">@String.Format("{0:N0}", item.gia_nhap) đ</td>
+                        <td class="px-4 py-2 text-blue-700">@String.Format("{0:N0}", item.gia_ban) đ</td>
+                        <td class="px-4 py-2">@item.tong_so_luong_ton</td>
+                        <td class="px-4 py-2">@item.so_thung</td>
+                        <td class="px-4 py-2">@item.le_don_vi</td>
+                        <td class="px-4 py-2">@item.don_vi_chinh</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using QL_SanCauLong.Models;
-using QuanLySanCauLong.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace QuanLySanCauLong.Areas.KhachHang.controllers
+namespace QL_SanCauLong.Controllers
 {
     public class BookingController : Controller
     {
@@ -212,7 +211,7 @@ namespace QuanLySanCauLong.Areas.KhachHang.controllers
                         string fullPath = Path.Combine(folder, fileName);
                         payment_image.SaveAs(fullPath);
 
-                        imagePath = fullPath; 
+                        imagePath = fullPath;
                     }
 
                     var invoice = new invoice

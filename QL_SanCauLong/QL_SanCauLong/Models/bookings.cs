@@ -25,8 +25,10 @@ namespace QL_SanCauLong.Models
         public Nullable<System.DateTime> created_at { get; set; }
         public Nullable<bool> is_paid { get; set; }
         public string payment_method { get; set; }
+        public Nullable<int> invoice_id { get; set; }
     
         public virtual courts courts { get; set; }
         public virtual customers customers { get; set; }
+        public virtual invoice invoice { get; set; }
     }
 }

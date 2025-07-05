@@ -4,6 +4,7 @@
     <EntitySetMapping Name="bookings">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.bookings">
         <MappingFragment StoreEntitySet="bookings">
+          <ScalarProperty Name="invoice_id" ColumnName="invoice_id" />
           <ScalarProperty Name="payment_method" ColumnName="payment_method" />
           <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="id" ColumnName="id" />
@@ -95,6 +96,7 @@
     <EntitySetMapping Name="invoice_details">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.invoice_details">
         <MappingFragment StoreEntitySet="invoice_details">
+          <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="item_id" ColumnName="item_id" />
           <ScalarProperty Name="created_at" ColumnName="created_at" />
           <ScalarProperty Name="total_price" ColumnName="total_price" />
@@ -108,6 +110,7 @@
     <EntitySetMapping Name="invoices">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.invoice">
         <MappingFragment StoreEntitySet="invoices">
+          <ScalarProperty Name="payment_image" ColumnName="payment_image" />
           <ScalarProperty Name="payment_method" ColumnName="payment_method" />
           <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="created_at" ColumnName="created_at" />

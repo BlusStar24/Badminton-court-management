@@ -4,6 +4,7 @@
     <EntitySetMapping Name="bookings">
       <EntityTypeMapping TypeName="QuanLySanCauLongModel.bookings">
         <MappingFragment StoreEntitySet="bookings">
+          <ScalarProperty Name="invoice_id" ColumnName="invoice_id" />
           <ScalarProperty Name="payment_method" ColumnName="payment_method" />
           <ScalarProperty Name="is_paid" ColumnName="is_paid" />
           <ScalarProperty Name="id" ColumnName="id" />

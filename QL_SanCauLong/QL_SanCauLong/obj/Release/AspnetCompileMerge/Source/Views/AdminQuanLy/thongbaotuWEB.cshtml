@@ -1,0 +1,131 @@
+﻿@model List<QL_SanCauLong.Models.ThongBaoModel>
+
+@{
+    ViewBag.Title = "thongbaotuWEB";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-2xl font-semibold text-center text-gray-800 my-8">📢 Thông báo đặt sân từ WEB</h2>
+
+<!-- Form lọc ngày -->
+<form method="get" class="flex flex-wrap justify-center gap-4 mb-6">
+    <div class="flex items-center gap-2">
+        <label class="font-semibold">Từ ngày:</label>
+        <input type="date" name="from" value="@Request["from"]"
+               class="border border-gray-300 rounded px-3 py-2" />
+    </div>
+    <div class="flex items-center gap-2">
+        <label class="font-semibold">Đến ngày:</label>
+        <input type="date" name="to" value="@Request["to"]"
+               class="border border-gray-300 rounded px-3 py-2" />
+    </div>
+    <button type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Lọc
+    </button>
+</form>
+
+<!-- Bảng thông báo -->
+<div class="overflow-x-auto bg-white shadow-md rounded-lg mx-4">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-blue-600 text-white">
+            <tr>
+                <th class="px-4 py-3 text-left">👤 Họ tên</th>
+                <th class="px-4 py-3 text-left">📞 SĐT</th>
+                <th class="px-4 py-3 text-left">📅 Ngày tạo</th>
+                <th class="px-4 py-3 text-left whitespace-nowrap">💵 Tổng tiền</th>
+                <th class="px-4 py-3 text-left">📋 Chi tiết</th>
+                <th class="px-4 py-3 text-center">🗑️</th>
+                <th class="px-4 py-3 text-left">🖼️ Minh chứng</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white">
+            @foreach (var tb in Model)
+            {
+                <tr class="hover:bg-blue-50">
+                    <td class="px-4 py-2">@tb.HoTen</td>
+                    <td class="px-4 py-2">@tb.SoDienThoai</td>
+                    <td class="px-4 py-2">@tb.NgayTao</td>
+                    <td class="px-4 py-2 whitespace-nowrap">@tb.TongTien.ToString("N0") đ</td>
+                    <td class="px-4 py-2">
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            @foreach (var ct in tb.ChiTiet)
+                            {
+                                <li>
+                                    <strong>@ct.court</strong> – @DateTime.Parse(ct.date).ToString("dd/MM/yyyy") @ct.start → @ct.end:
+                                    <strong>@ct.price.ToString("N0") đ</strong>
+                                </li>
+                            }
+                        </ul>
+                    </td>
+                    <td class="px-4 py-2 text-center">
+                        @using (Html.BeginForm("XoaThongBao", "Adminquanly", FormMethod.Post))
+                        {
+                            @Html.Hidden("SoDienThoai", tb.SoDienThoai)
+                            @Html.Hidden("NgayTao", tb.NgayTao)
+                            <button type="submit"
+                                    onclick="return confirm('Xác nhận xóa thông báo này?');"
+                                    class="text-red-600 hover:underline">
+                                ❌
+                            </button>
+                        }
+                    </td>
+                    <td class="px-4 py-2">
+                        @if (!string.IsNullOrEmpty(tb.MinhChungChuyenKhoan))
+                        {
+                            var fileName = System.IO.Path.GetFileName(tb.MinhChungChuyenKhoan);
+                            <img src="@Url.Action("HienThiMinhChung", "AdminQuanLy", new { file = fileName })" class="w-24 h-24 object-contain border" />
+                        }
+                        else
+                        {
+                            <span class="italic text-gray-400">Không có</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.scrollTo(0, document.body.scrollHeight);
+
+            // Hỏi quyền hiển thị thông báo trình duyệt
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(function (permission) {
+                    console.log("Permission:", permission);
+                });
+            }
+        });
+
+        let countCu = 0;
+
+        function showPopup(title, body) {
+            if (Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: "https://cdn-icons-png.flaticon.com/512/726/726448.png" // biểu tượng đặt sân
+                });
+            } else {
+                console.log("Notification chưa được cấp quyền.");
+            }
+        }
+
+        async function checkNewBooking() {
+            try {
+                const res = await fetch('/AdminQuanLy/DemThongBaoMoi');
+                const data = await res.json();
+                if (data.count > countCu) {
+                    showPopup("📢 Có khách vừa đặt sân!", "Kiểm tra trong mục Thông báo.");
+                    countCu = data.count;
+                }
+            } catch (e) {
+                console.error("Lỗi check thông báo:", e);
+            }
+        }
+
+        setInterval(checkNewBooking, 10000); // Mỗi 10 giây
+    </script>
+}

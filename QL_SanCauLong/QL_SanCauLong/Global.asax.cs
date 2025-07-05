@@ -12,6 +12,7 @@ namespace QL_SanCauLong
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters); // Thêm dòng này
             RouteConfig.RegisterRoutes(RouteTable.Routes);
         }
     }

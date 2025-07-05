@@ -40,7 +40,7 @@
     <OutputPath>bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>5</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -124,11 +124,13 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AdminQuanLyController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
-    <Compile Include="Controllers\QuanLyBanHangController.cs" />
     <Compile Include="Controllers\BookingController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\QuanLyBanHangController.cs" />
     <Compile Include="Controllers\QuanLyHoaDontController.cs" />
     <Compile Include="Controllers\QuanLyKhoHangController.cs" />
     <Compile Include="Controllers\ThongKeController.cs" />
@@ -155,6 +157,7 @@
     <Compile Include="Models\invoice.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\InvoiceViewModel.cs" />
     <Compile Include="Models\invoice_details.cs">
       <DependentUpon>QL_SanCauLongdb.tt</DependentUpon>
     </Compile>
@@ -207,8 +210,6 @@
     <None Include="packages.config" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Booking\ViewDatSan.cshtml" />
-    <Content Include="Views\Booking\ThanhToan.cshtml" />
     <Content Include="Views\Auth\Register.cshtml" />
     <Content Include="Views\Auth\Login.cshtml" />
     <Content Include="Views\Shared\_Sidebar.cshtml" />
@@ -218,6 +219,12 @@
     <Content Include="Views\QuanLyBanHang\BanHang.cshtml" />
     <Content Include="Views\QuanLyKhoHang\Index.cshtml" />
     <Content Include="Views\ThongKe\Index.cshtml" />
+    <Content Include="Views\QuanLyHoaDont\Index.cshtml" />
+    <Content Include="Views\AdminQuanLy\XemChiTietBooking.cshtml" />
+    <Content Include="Views\Booking\ViewDatSan.cshtml" />
+    <Content Include="Views\Booking\ThanhToan.cshtml" />
+    <None Include="Properties\PublishProfiles\bluestar24-001-site1 - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\bluestar24-001-site1 - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -227,7 +234,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\QuanLyHoaDont\" />
+    <Folder Include="Views\Home\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

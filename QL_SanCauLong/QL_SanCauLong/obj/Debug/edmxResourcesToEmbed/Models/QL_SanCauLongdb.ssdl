@@ -15,6 +15,7 @@
     <Property Name="created_at" Type="datetime" />
     <Property Name="is_paid" Type="bit" />
     <Property Name="payment_method" Type="nvarchar" MaxLength="50" />
+    <Property Name="invoice_id" Type="int" />
   </EntityType>
   <EntityType Name="courts">
     <Key>
@@ -252,6 +253,18 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
+  <Association Name="FK_bookings_invoices">
+    <End Role="invoices" Type="Self.invoices" Multiplicity="0..1" />
+    <End Role="bookings" Type="Self.bookings" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="invoices">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="bookings">
+        <PropertyRef Name="invoice_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
   <Function Name="fn_xem_ton_kho_chi_tiet" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
     <ReturnType>
       <CollectionType>
@@ -319,6 +332,10 @@
     <AssociationSet Name="FK__work_sche__emplo__4E88ABD4" Association="Self.FK__work_sche__emplo__4E88ABD4">
       <End Role="employees" EntitySet="employees" />
       <End Role="work_schedule" EntitySet="work_schedule" />
+    </AssociationSet>
+    <AssociationSet Name="FK_bookings_invoices" Association="Self.FK_bookings_invoices">
+      <End Role="invoices" EntitySet="invoices" />
+      <End Role="bookings" EntitySet="bookings" />
     </AssociationSet>
   </EntityContainer>
 </Schema>

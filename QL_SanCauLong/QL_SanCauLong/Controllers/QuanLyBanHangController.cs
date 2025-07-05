@@ -65,7 +65,7 @@ namespace QL_SanCauLong.Controllers
                 .ToList();
 
             var result = db.invoice_details
-                .Where(ct => invoiceIds.Contains(ct.invoice_id) && ct.is_paid == false)
+                .Where(ct => invoiceIds.Contains(ct.invoice_id) && ct.is_paid == false && ct.item_id != 1)
                 .Select(ct => new
                 {
                     item_id = ct.item_id,
@@ -105,24 +105,28 @@ namespace QL_SanCauLong.Controllers
         [HttpPost]
         public ActionResult LuuHoaDon(string name, string phone, List<int> item_ids, List<bool> item_is_paid, List<int> quantities, List<int> booking_ids, List<bool> booking_is_paid, string payment_method)
         {
-            // Kiểm tra dữ liệu sản phẩm nếu có
-            bool validMatHang = item_ids != null && quantities != null && item_ids.Count == quantities.Count;
-            bool validBooking = booking_ids != null && booking_ids.Any();
+            bool hasMatHang = item_ids != null && quantities != null && item_ids.Count == quantities.Count && item_ids.Count > 0;
+            bool hasBooking = booking_ids != null && booking_ids.Count > 0;
 
-            if (!validMatHang && !validBooking)
-                return Json(new { success = false, message = "Không có sản phẩm hay lịch sân nào để thanh toán." });
+            if (!hasMatHang && !hasBooking)
+                return Json(new { success = false, message = "Không có dữ liệu để lưu." });
+
+            if (hasMatHang && (item_is_paid == null || item_is_paid.Count != item_ids.Count))
+            {
+                item_is_paid = new List<bool>();
+                for (int i = 0; i < item_ids.Count; i++) item_is_paid.Add(false);
+            }
 
             try
             {
                 name = string.IsNullOrWhiteSpace(name) ? "Vãng lai" : name.Trim();
                 var customer = db.customers.FirstOrDefault(c => c.name == name);
-
                 if (customer == null)
                 {
                     customer = new customers
                     {
                         name = name,
-                        phone = "",
+                        phone = phone ?? "",
                         password = Guid.NewGuid().ToString("N"),
                         role = "customer",
                         created_at = DateTime.Now
@@ -131,23 +135,25 @@ namespace QL_SanCauLong.Controllers
                     db.SaveChanges();
                 }
 
-                decimal tongTien = 0;
-
-                // Tạo hóa đơn
-                var invoice = new invoice
+                var invoice = db.invoices.FirstOrDefault(i => i.customer_id == customer.id && i.is_paid == false);
+                if (invoice == null)
                 {
-                    customer_id = customer.id,
-                    total_amount = 0,
-                    note = "Bán tại quầy",
-                    is_paid = true,
-                    created_at = DateTime.Now,
-                    payment_method = payment_method ?? "Tiền mặt"
-                };
-                db.invoices.Add(invoice);
-                db.SaveChanges();
+                    invoice = new invoice
+                    {
+                        customer_id = customer.id,
+                        total_amount = 0,
+                        note = "Bán tại quầy",
+                        is_paid = false,
+                        created_at = DateTime.Now,
+                        payment_method = payment_method ?? "Tiền mặt"
+                    };
+                    db.invoices.Add(invoice);
+                    db.SaveChanges();
+                }
 
-                // Thêm mặt hàng
-                if (validMatHang)
+                // 1. Mặt hàng
+                if (hasMatHang)
+                {
                     for (int i = 0; i < item_ids.Count; i++)
                     {
                         int itemId = item_ids[i];
@@ -157,22 +163,34 @@ namespace QL_SanCauLong.Controllers
                         var hang = db.mat_hang.FirstOrDefault(m => m.id == itemId);
                         if (hang == null) continue;
 
-                        db.invoice_details.Add(new invoice_details
+                        var chiTiet = db.invoice_details.FirstOrDefault(ct => ct.invoice_id == invoice.id && ct.item_id == itemId);
+                        if (chiTiet != null)
                         {
-                            invoice_id = invoice.id,
-                            item_id = itemId,
-                            quantity = quantity,
-                            unit_price = hang.gia_ban,
-                            is_paid = isPaid,
-                            created_at = DateTime.Now
-                        });
-
-                        if (isPaid)
-                            tongTien += hang.gia_ban * quantity;
+                            chiTiet.quantity = quantity;
+                            chiTiet.unit_price = hang.gia_ban;
+                            chiTiet.total_price = quantity * hang.gia_ban;
+                            chiTiet.is_paid = isPaid;
+                            chiTiet.created_at = DateTime.Now;
+                        }
+                        else
+                        {
+                            db.invoice_details.Add(new invoice_details
+                            {
+                                invoice_id = invoice.id,
+                                item_id = itemId,
+                                quantity = quantity,
+                                unit_price = hang.gia_ban,
+                                total_price = quantity * hang.gia_ban,
+                                is_paid = isPaid,
+                                created_at = DateTime.Now
+                            });
+                        }
                     }
+                    db.SaveChanges();
+                }
 
-                // Cập nhật trạng thái lịch sân
-                if (validBooking)
+                // 2. Booking
+                if (hasBooking)
                 {
                     for (int i = 0; i < booking_ids.Count; i++)
                     {
@@ -180,25 +198,110 @@ namespace QL_SanCauLong.Controllers
                         bool isPaid = booking_is_paid[i];
 
                         var booking = db.bookings.FirstOrDefault(b => b.id == id && b.customer_id == customer.id);
-                        if (booking != null)
+                        if (booking == null || booking.invoice_id == null) continue;
+
+                        // Tính lại giá theo price_rules
+                        int dow = (int)booking.date.DayOfWeek;
+                        var rule = db.price_rules.FirstOrDefault(r =>
+                            r.day_of_week == dow &&
+                            r.type == booking.type &&
+                            r.start_hour <= booking.start_time.Hours &&
+                            r.end_hour > booking.start_time.Hours);
+
+                        if (rule != null)
                         {
-                            booking.is_paid = isPaid;
-                            if (isPaid)
-                                tongTien += booking.price;
+                            double duration = (booking.end_time - booking.start_time).TotalHours;
+                            booking.price = (decimal)duration * (rule.price_per_hour ?? 0);
+                        }
+
+                        // Gán lại invoice_id nếu null
+                        if (booking.invoice_id == null)
+                            booking.invoice_id = invoice.id;
+
+                        // Cuối cùng mới gán is_paid
+                        booking.is_paid = isPaid;
+
+                        if (rule != null)
+                        {
+                            double duration = (booking.end_time - booking.start_time).TotalHours;
+                            booking.price = (decimal)duration * (rule.price_per_hour ?? 0);
+                        }
+
+
+                        var detail = db.invoice_details
+                         .Where(d => d.invoice_id == booking.invoice_id && d.item_id == 1)
+                         .OrderByDescending(d => d.created_at)
+                         .FirstOrDefault();
+
+
+                        if (detail != null)
+                        {
+                            detail.unit_price = booking.price;
+                            detail.total_price = booking.price;
+                            detail.is_paid = isPaid;
+                        }
+                        else
+                        {
+                            db.invoice_details.Add(new invoice_details
+                            {
+                                invoice_id = booking.invoice_id.Value,
+                                item_id = 1,
+                                quantity = 1,
+                                unit_price = booking.price,
+                                total_price = booking.price,
+                                is_paid = isPaid,
+                                created_at = DateTime.Now
+                            });
                         }
                     }
+                    db.SaveChanges();
                 }
 
-                invoice.total_amount = tongTien;
-                db.SaveChanges();
+                // 3. Lấy danh sách hóa đơn liên quan
+                var relatedInvoiceIds = booking_ids
+                    .Select(id => db.bookings.Where(b => b.id == id).Select(b => b.invoice_id).FirstOrDefault())
+                    .Where(id => id != null)
+                    .Select(id => id.Value)
+                    .Distinct()
+                    .ToList();
 
-                return Json(new { success = true, message = "Lưu hóa đơn thành công!" });
+                if (!relatedInvoiceIds.Contains(invoice.id)) relatedInvoiceIds.Add(invoice.id);
+
+                foreach (var invId in relatedInvoiceIds)
+                {
+                    var inv = db.invoices.FirstOrDefault(i => i.id == invId);
+                    if (inv == null) continue;
+
+                    var allDetails = db.invoice_details.Where(d => d.invoice_id == inv.id).ToList();
+                    var allBookings = db.bookings.Where(b => b.invoice_id == inv.id).ToList();
+
+                    inv.total_amount = allDetails
+                     .Where(d => d.is_paid.GetValueOrDefault()) // hoặc: d.is_paid == true
+                     .Sum(d => d.total_price ?? (d.quantity * d.unit_price));
+
+                    bool allItemsPaid = allDetails.All(d => d.is_paid == true);
+                    bool allBookingsPaid = allBookings.All(b => b.is_paid == true);
+                    inv.is_paid = allItemsPaid && allBookingsPaid;
+
+                    if (allItemsPaid)
+                        foreach (var d in allDetails.Where(d => d.is_paid != true)) d.is_paid = true;
+
+                    if (allBookingsPaid)
+                        foreach (var b in allBookings.Where(b => b.is_paid != true)) b.is_paid = true;
+                }
+
+
+                db.SaveChanges();
+                return Json(new { success = true, message = "Cập nhật hóa đơn thành công!" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
-            }
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | Inner: " + ex.InnerException.Message;
+                if (ex.InnerException?.InnerException != null) msg += " | SQL: " + ex.InnerException.InnerException.Message;
 
+                return Json(new { success = false, message = msg });
+            }
         }
     }
 }

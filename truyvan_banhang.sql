@@ -13,10 +13,15 @@ VALUES (1, 10000, N'Mua hàng tại quầy', 1);
 SELECT * FROM fn_xem_ton_kho_chi_tiet();
 SELECT * FROM mat_hang
 SELECT * FROM nhap_kho
-SELECT * FROM bookings
+
 SELECT * FROM customers
+SELECT * FROM bookings
 SELECT * FROM invoices
 SELECT * FROM invoice_details
+DELETE FROM bookings WHERE id = 203;
+
+
+
 DECLARE @invoiceId INT = SCOPE_IDENTITY();
 
 -- Thêm chi tiết hóa đơn (ví dụ mua 2 chai nước suối và 1 bánh mì)

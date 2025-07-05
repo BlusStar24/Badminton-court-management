@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -112,6 +113,108 @@ namespace QL_SanCauLong.Controllers
         }
         //===========================================================================================================================
         [HttpPost]
+        public JsonResult CapNhatGiaTheoKhung(string date, int court_id, string start_time, string end_time, decimal new_price)
+        {
+            try
+            {
+                var parsedDate = DateTime.Parse(date);
+                var start = TimeSpan.Parse(start_time);
+                var end = TimeSpan.Parse(end_time);
+
+                var slots = db.bookings.Where(b =>
+                    b.date == parsedDate &&
+                    b.court_id == court_id &&
+                    b.start_time >= start &&
+                    b.start_time < end
+                ).ToList();
+
+                if (!slots.Any())
+                    return Json(new { success = false, message = "Không tìm thấy lịch đặt phù hợp." });
+
+                var pricePerSlot = new_price / slots.Count;
+
+                foreach (var b in slots)
+                {
+                    b.price = Math.Round(pricePerSlot, 0);
+                }
+
+                db.SaveChanges();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Đã cập nhật tổng {new_price:N0}đ cho {slots.Count} ô, mỗi ô {Math.Round(pricePerSlot, 0):N0}đ"
+                }, JsonRequestBehavior.AllowGet); // ⚠️ Nếu lỗi, thêm AllowGet
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("❌ Cập nhật giá lỗi: " + ex.ToString());
+                return Json(new { success = false, message = ex.ToString() }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        //========================================================================================================================================
+        [HttpGet]
+        public ActionResult XemChiTietBooking(string date, int court_id, string hour)
+        {
+            try
+            {
+                // Log đầu vào
+                System.Diagnostics.Debug.WriteLine($"[XemChiTietBooking] Input - date: {date}, court_id: {court_id}, hour: {hour}");
+
+                var parsedDate = DateTime.Parse(date);
+                double hourDouble = double.Parse(hour);
+
+                // Truy vấn ban đầu rồi ToList() để tránh lỗi LINQ to Entities không hỗ trợ TotalHours
+                var bookings = db.bookings
+                    .Where(b => b.date == parsedDate && b.court_id == court_id)
+                    .ToList();
+
+                // So sánh thời gian bắt đầu gần đúng (dùng TotalHours)
+                var raw = bookings
+                    .Where(b => Math.Abs(b.start_time.TotalHours - hourDouble) < 0.01)
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"[XemChiTietBooking] Found {raw.Count} bookings at this time");
+
+                var slots = raw.Select(b =>
+                {
+                    var start = b.start_time.ToString(@"hh\:mm");
+                    var end = b.end_time.ToString(@"hh\:mm");
+                    var thuVN = b.date.ToString("dddd", new CultureInfo("vi-VN"));
+
+                    return new BookingInput
+                    {
+                        DayName = thuVN,
+                        date = b.date.ToString("yyyy-MM-dd"),
+                        court = b.court_id.ToString(),
+                        start = start,
+                        end = end,
+                        type = b.type,
+                        price = (long)b.price
+                    };
+                }).ToList();
+
+                if (!slots.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine($"[XemChiTietBooking] No slot found.");
+                    return Content("Không tìm thấy lịch đặt tại ô này.");
+                }
+                ViewBag.hoTen = raw.FirstOrDefault()?.customers?.name ?? "";
+                ViewBag.BookingId = bookings.FirstOrDefault()?.id ?? 0;
+                return PartialView("XemChiTietBooking", slots);
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException != null ? ex.InnerException.Message : "NULL";
+                System.Diagnostics.Debug.WriteLine($"[XemChiTietBooking] Exception: {ex.Message}\n{ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[XemChiTietBooking] InnerException: {inner}");
+
+                return Content("Lỗi: " + ex.Message + "<br/>" + ex.StackTrace + "<br/>Inner: " + inner);
+            }
+        }
+
+        //========================================================================================================================================
+        [HttpPost]
         public JsonResult UpdateBookingsWithCustomer(BookingViewModel model)
         {
             try
@@ -136,9 +239,9 @@ namespace QL_SanCauLong.Controllers
                         options = new[] { samePhone.name, name }
                     });
                 }
-              
+
                 customers customer = samePhone ?? sameName;
-               
+
                 if (customer == null)
                 {
                     customer = new customers
@@ -166,73 +269,59 @@ namespace QL_SanCauLong.Controllers
                         start = TimeSpan.Parse(b.start_time),
                         end = TimeSpan.Parse(b.end_time),
                         type = (b.type ?? "").Trim().ToLower(),
-                        b.is_paid
+                        b.is_paid,
+                        b.payment_method,
+                        manual_price = b.manual_price
                     })
-                    .GroupBy(g => new { g.court_id, g.date, g.type })
+                    .GroupBy(g => new { g.court_id, g.date, g.type, g.payment_method, g.is_paid })
                     .SelectMany(g =>
                     {
                         var list = g.OrderBy(x => x.start).ToList();
-                        var merged = new List<(TimeSpan start, TimeSpan end, bool is_paid, decimal price)>();
-
                         TimeSpan s = list[0].start;
-                        TimeSpan e = list[0].end;
-                        bool paid = list[0].is_paid;
-                        decimal totalPrice = 0;
+                        TimeSpan e = list[list.Count - 1].end;
+                        bool paid = g.Key.is_paid;
+                        string method = g.Key.payment_method;
+                        decimal? manual = list.FirstOrDefault()?.manual_price;
+                        decimal total = 0;
 
-                        for (int i = 0; i < list.Count; i++)
+                        if (manual.HasValue && manual.Value > 0)
                         {
-                            var current = list[i];
-                            double duration = (current.end - current.start).TotalHours;
-                            int dow = (int)g.Key.date.DayOfWeek;
-
-                            decimal price = 0;
-
-                            if (g.Key.type == "vãng lai" || g.Key.type == "cố định" || g.Key.type == "pass sân")
+                            total = manual.Value;
+                        }
+                        else
+                        {
+                            foreach (var x in list)
                             {
+                                double duration = (x.end - x.start).TotalHours;
+                                int dow = (int)g.Key.date.DayOfWeek;
                                 var rule = db.price_rules.FirstOrDefault(r =>
                                     r.day_of_week == dow &&
                                     r.type == g.Key.type &&
-                                    r.start_hour <= current.start.TotalHours &&
-                                    r.end_hour > current.start.TotalHours);
+                                    r.start_hour <= x.start.TotalHours &&
+                                    r.end_hour > x.start.TotalHours);
 
                                 if (rule == null)
-                                    throw new Exception($"Không có bảng giá cho loại '{g.Key.type}' lúc {current.start} ngày {g.Key.date:dd/MM}");
+                                    throw new Exception($"Không có bảng giá cho loại '{g.Key.type}' lúc {x.start} ngày {g.Key.date:dd/MM}");
 
-                                price = (rule.price_per_hour ?? 0) * (decimal)duration;
-                            }
-
-                            if (i == 0 || current.start == e)
-                            {
-                                e = current.end;
-                                totalPrice += price;
-                            }
-                            else
-                            {
-                                merged.Add((s, e, paid, totalPrice));
-                                s = current.start;
-                                e = current.end;
-                                paid = current.is_paid;
-                                totalPrice = price;
+                                total += (rule.price_per_hour ?? 0) * (decimal)duration;
                             }
                         }
 
-                        merged.Add((s, e, paid, totalPrice));
-
-                        return merged.Select(t => new
+                        return new[]
                         {
-                            g.Key.court_id,
-                            g.Key.date,
-                            g.Key.type,
-                            start_time = t.start,
-                            end_time = t.end,
-                            is_paid = t.is_paid,
-                            price = t.price
-                        });
-                    }).ToList();
-
-                var courtIds = grouped.Select(g => g.court_id).Distinct().ToList();
-                var allOld = db.bookings
-                    .Where(b => courtIds.Contains(b.court_id))
+                    new
+                    {
+                        court_id = g.Key.court_id,
+                        date = g.Key.date,
+                        type = g.Key.type,
+                        start_time = s,
+                        end_time = e,
+                        is_paid = paid,
+                        payment_method = method,
+                        price = total
+                    }
+                        };
+                    })
                     .ToList();
 
                 foreach (var b in grouped)
@@ -256,7 +345,19 @@ namespace QL_SanCauLong.Controllers
                         });
                     }
 
-                    db.bookings.Add(new bookings
+                    var invoice = new invoice
+                    {
+                        customer_id = customer.id,
+                        total_amount = b.price,
+                        note = "Tạo khi đặt sân",
+                        is_paid = b.is_paid,
+                        created_at = DateTime.Now,
+                        payment_method = b.payment_method ?? "Tiền mặt"
+                    };
+                    db.invoices.Add(invoice);
+                    db.SaveChanges();
+
+                    var newBooking = new bookings
                     {
                         court_id = b.court_id,
                         customer_id = customer.id,
@@ -266,11 +367,26 @@ namespace QL_SanCauLong.Controllers
                         type = b.type,
                         price = b.price,
                         is_paid = b.is_paid,
+                        payment_method = b.payment_method,
+                        created_at = DateTime.Now,
+                        invoice_id = invoice.id
+                    };
+                    db.bookings.Add(newBooking);
+
+                    db.invoice_details.Add(new invoice_details
+                    {
+                        invoice_id = invoice.id,
+                        item_id = b.court_id,
+                        quantity = 1,
+                        unit_price = b.price,
+                        total_price = b.price,
+                        is_paid = b.is_paid,
                         created_at = DateTime.Now
                     });
+
+                    db.SaveChanges();
                 }
 
-                db.SaveChanges();
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -278,6 +394,9 @@ namespace QL_SanCauLong.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+
+
         //============================================================================================================================
 
         //trạng thái thanh toán
@@ -319,7 +438,6 @@ namespace QL_SanCauLong.Controllers
             public List<BookingRequest> bookings { get; set; }
         }
 
-        // Add the missing property 'booking_id' to the BookingRequest class to resolve the error.  
         public class BookingRequest
         {
             public int court_id { get; set; }
@@ -328,10 +446,15 @@ namespace QL_SanCauLong.Controllers
             public string end_time { get; set; }
             public string type { get; set; }
             public bool is_paid { get; set; }
-
-            // Add this property to fix the error.  
             public int? booking_id { get; set; }
+            public string payment_method { get; set; }
+            public decimal? manual_price { get; set; } 
+            public decimal? price { get; set; }
         }
+
+
+
+
 
         // Thêm lịch đặt sân
         [HttpPost]

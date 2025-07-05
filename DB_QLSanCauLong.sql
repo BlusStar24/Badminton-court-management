@@ -51,6 +51,9 @@ GO
 ALTER TABLE bookings ADD is_paid BIT DEFAULT 0;
 ALTER TABLE bookings
 ADD payment_method NVARCHAR(50) NULL;
+ALTER TABLE bookings ADD invoice_id INT NULL;
+ALTER TABLE bookings ADD CONSTRAINT FK_bookings_invoices FOREIGN KEY (invoice_id) REFERENCES invoices(id);
+
 
 EXEC sp_help 'bookings';
 
@@ -157,6 +160,9 @@ CREATE TABLE invoice_details (
     FOREIGN KEY (invoice_id) REFERENCES invoices(id),
     FOREIGN KEY (item_id) REFERENCES mat_hang(id)
 );
+ALTER TABLE invoice_details
+ADD is_paid BIT DEFAULT 0;
+
 --=======================================================================
 --Trigger sau khi nhập kho
 CREATE TRIGGER trg_nhap_kho_after_insert
@@ -250,6 +256,26 @@ RETURN
 
 
 --====================================================================================================
+CREATE TRIGGER trg_delete_booking_cascade
+ON bookings
+AFTER DELETE
+AS
+BEGIN
+    -- Xóa chi tiết hóa đơn liên quan đến booking đã xóa
+    DELETE d
+    FROM invoice_details d
+    JOIN deleted b ON d.invoice_id = b.invoice_id
+    WHERE d.item_id = 1 AND d.total_price = b.price;
+
+    -- Xóa hóa đơn nếu không còn chi tiết nào
+    DELETE i
+    FROM invoices i
+    WHERE NOT EXISTS (
+        SELECT 1 FROM invoice_details d WHERE d.invoice_id = i.id
+    );
+END
+
+--=====================================================================================================
 -- Thêm khách hàng
 INSERT INTO customers (name, phone, role) VALUES 
 (N'Nguy?n V?n A', '0901234567', N'customer'),
