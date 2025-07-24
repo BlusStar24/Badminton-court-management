@@ -1,0 +1,249 @@
+﻿@{ Response.ContentEncoding = System.Text.Encoding.UTF8; }
+@{ Response.Charset = "utf-8"; }
+@{
+    var role = Request.QueryString["role"] ?? "customer"; // Mặc định là customer nếu không truyền gì
+    Layout = null;
+}
+<div class="login">
+    <form id="loginForm" action="@Url.Action("Login", "Account")" method="POST" accept-charset="UTF-8" class="form-atri" onsubmit="return validateBeforeSubmit(event)">
+        <h1 class="text-2xl font-bold mb-2">Đăng Nhập</h1>
+
+
+
+        @if (!string.IsNullOrEmpty(ViewBag.Message as string))
+        {
+            <div class="message">@ViewBag.Message</div>
+        }
+
+        <!-- Họ tên -->
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="HoTen" id="hoten" placeholder="Họ tên" required />
+        </div>
+
+        <!-- SĐT -->
+        <div class="input-group">
+            <i class="fas fa-phone"></i>
+            <input type="text" name="SoDienThoai" id="sdt" placeholder="Số điện thoại" required pattern="\d{10}" />
+        </div>
+
+        <!-- Password: Ẩn ban đầu -->
+        <div class="input-group hidden" id="passwordGroup">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" id="password" placeholder="Mật khẩu (admin)" minlength="6" />
+        </div>
+
+        <button type="submit">Đăng Nhập</button>
+        <button type="button" class="back-button" onclick="window.location.href='@Url.Action("Register", "Account")'">
+            <i class="fas fa-arrow-left"></i> Đăng Ký
+        </button>
+        <button type="button" class="back-button" onclick="handleBack()">
+            <i class="fas fa-arrow-left"></i> Quay lại trang đặt sân
+        </button>
+    </form>
+</div>
+
+<script>
+    function handleBack() {
+        // Kiểm tra nếu đang ở chế độ window nhỏ (popup)
+        if (window.opener) {
+            window.close(); // Đóng cửa sổ popup
+        } else {
+            window.location.href = '/'; // Nếu không phải popup thì quay về trang chính
+        }
+    }
+</script>
+
+<script>
+
+    document.getElementById('sdt').addEventListener('blur', checkRoleAndTogglePassword);
+    document.getElementById('hoten').addEventListener('blur', checkRoleAndTogglePassword);
+
+    async function checkRoleAndTogglePassword() {
+        const sdt = document.getElementById('sdt').value.trim();
+        const hoten = document.getElementById('hoten').value.trim();
+        const passwordGroup = document.getElementById('passwordGroup');
+
+        if (!sdt || !hoten) return;
+
+        const response = await fetch(`/Account/CheckRole?hoten=${encodeURIComponent(hoten)}&sdt=${encodeURIComponent(sdt)}`);
+        const result = await response.json();
+
+        if (result.role === 'admin') {
+            passwordGroup.classList.remove('hidden');
+        } else {
+            passwordGroup.classList.add('hidden');
+        }
+    }
+
+    async function validateBeforeSubmit(e) {
+        e.preventDefault(); // Ngăn form submit ngay
+
+        const sdt = document.getElementById('sdt').value.trim();
+        const hoten = document.getElementById('hoten').value.trim();
+        const passwordInput = document.getElementById('password');
+
+        if (!sdt || !hoten) {
+            alert("Vui lòng nhập đầy đủ thông tin.");
+            return;
+        }
+
+        const response = await fetch(`/Account/CheckRole?hoten=${encodeURIComponent(hoten)}&sdt=${encodeURIComponent(sdt)}`);
+        const result = await response.json();
+
+        if (result.role === 'admin') {
+            if (!passwordInput.value || passwordInput.value.length < 6) {
+                alert("🔐 Vui lòng nhập mật khẩu quản trị hợp lệ.");
+                return;
+            }
+        }
+
+        // ✅ Hợp lệ, submit form
+        document.getElementById('loginForm').submit();
+    }
+</script>
+
+<style>
+    .login {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #ffcc80, #ff8a65);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .form-atri {
+        padding: 40px;
+        width: 400px;
+        background-color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+
+    h1 {
+        color: #2d3436;
+        margin-bottom: 25px;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 1.2rem;
+    }
+
+        .input-group i {
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 1px solid #dcdde1;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            color: #2d3436;
+        }
+
+            .input-group input:focus {
+                border-color: #7e57c2;
+                background: #f3e5f5;
+                outline: none;
+            }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        border-radius: 10px;
+        background-color: #00b894;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+    }
+
+        button:hover {
+            background-color: #019875;
+        }
+
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        border-radius: 10px;
+        background-color: #dfe6e9;
+        color: #2d3436;
+        font-weight: 600;
+        border: 2px solid #b2bec3;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: all 0.3s ease;
+    }
+
+        .back-button:hover {
+            background-color: #b2bec3;
+            color: white;
+            border-color: #636e72;
+        }
+
+        .back-button i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover i {
+            transform: translateX(-4px);
+        }
+
+    .forgot-password,
+    .register-link {
+        color: #7e57c2;
+        transition: color 0.3s;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+        .forgot-password:hover,
+        .register-link:hover {
+            color: #5e35b1;
+        }
+
+    .message {
+        color: #e53935;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+    }
+</style>
+<style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

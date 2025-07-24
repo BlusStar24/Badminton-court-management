@@ -1,37 +1,22 @@
-﻿
-@model List<QL_SanCauLong.Models.mat_hang>
+﻿@model List<QL_SanCauLong.Models.mat_hang>
 
 @{
     ViewBag.Title = "BanHang";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bán hàng</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-</head>
-
-<style>
-    .tab-active {
-        background-color: #1e40af !important;
-    }
-</style>
 
 <body class="bg-[#f0f1f3] font-sans">
     <div class="flex flex-col min-h-screen">
         <!-- Top bar -->
-        <div class="flex items-center bg-[#2a6de0] px-3 sm:px-6 h-12 text-white">
+        <div class="flex items-center bg-[#2a6de0] px-3 sm:px-6 h-12 text-white top-bar">
             <div class="text-lg font-semibold">Bán hàng</div>
             <button id="btnOpenModal" class="ml-auto px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
                 <i class="fas fa-plus mr-1"></i> Thêm mặt hàng
             </button>
         </div>
 
-        <!-- Modal nhập mặt hàng (đặt ngay sau Top bar) -->
+        <!-- Modal nhập mặt hàng -->
         <div id="modalMatHang" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
             <div class="bg-white p-6 rounded shadow-lg w-full max-w-lg">
                 <div class="text-lg font-semibold mb-4">Thêm mặt hàng mới</div>
@@ -57,12 +42,12 @@
                 </form>
             </div>
         </div>
-        <!--Tab hóa đơn -->
-        <div class="flex items-center space-x-2 px-4 py-2 bg-white">
-            <div id="tabHoaDon" class="flex items-center space-x-2">
-                <div class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold select-none cursor-pointer tab tab-active flex items-center space-x-1" data-id="1">
-                    <span>Hóa đơn 1</span>
 
+        <!-- Tab hóa đơn -->
+        <div class="flex items-center space-x-2 px-4 py-2 bg-white">
+            <div id="tabHoaDon" class="flex items-center space-x-2 overflow-x-auto flex-nowrap">
+                <div class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold select-none cursor-pointer tab tab-active flex items-center space-x-1" data-id="Hóa đơn 1">
+                    <span>Hóa đơn 1</span>
                 </div>
                 <button id="btnThemHoaDon" class="w-8 h-8 rounded-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center">
                     <i class="fas fa-plus"></i>
@@ -74,19 +59,18 @@
         <div class="flex flex-grow overflow-hidden">
             <!-- Vùng bên trái -->
             <div class="flex-grow bg-[#f0f1f3] flex flex-col justify-between p-4 overflow-y-auto">
-
                 <!-- Danh sách sản phẩm đã chọn -->
                 <div class="mb-4">
                     <div class="text-blue-700 font-semibold text-base mb-2">🛒 Sản phẩm đã chọn:</div>
                     <div id="gioHang" class="space-y-2"></div>
+                    <div class="text-blue-700 font-semibold text-base mt-4 mb-2">📦 Sản phẩm chưa thanh toán:</div>
+                    <div id="sanPhamDaChon" class="space-y-2"></div>
                 </div>
-
                 <!-- Lịch sân chưa thanh toán -->
                 <div class="mb-4">
                     <div class="text-blue-700 font-semibold text-base mb-2">📅 Lịch đặt sân chưa thanh toán:</div>
                     <div id="bookingList" class="space-y-2"></div>
                 </div>
-
                 <!-- Ghi chú và tổng tiền -->
                 <div class="flex items-center bg-white rounded-md px-4 py-2 mt-4 shadow border space-x-4">
                     <input class="flex-grow text-sm text-gray-700 placeholder-gray-400 border-none outline-none"
@@ -95,9 +79,8 @@
                     <div id="tongTienHang" class="font-bold text-lg text-blue-700 whitespace-nowrap">0 đ</div>
                 </div>
             </div>
-
             <!-- Right panel -->
-            <div class="w-[480px] bg-white flex flex-col p-4">
+            <div class="w-[800px] bg-white flex flex-col p-4">
                 <!-- Tên khách -->
                 <div class="flex items-center mb-4 space-x-2">
                     <input list="suggestKhach" id="khachHang" class="w-full border border-gray-300 rounded px-3 py-1 text-sm outline-none"
@@ -112,23 +95,35 @@
                         <i class="fas fa-plus text-gray-700"></i>
                     </button>
                 </div>
-
                 <!-- Danh sách sản phẩm -->
-                <div class="grid grid-cols-3 gap-x-6 gap-y-4 text-xs text-gray-900">
-                    @foreach (var item in Model)
-                    {
-                        <div class="flex flex-col items-center text-center border rounded p-2 hover:bg-gray-100 cursor-pointer">
-                            <img src="@item.hinh_anh" alt="@item.ten_hang" class="w-12 h-8 object-contain mb-1" />
-                            <div class="text-[10px]">@item.ten_hang</div>
-                            <div class="text-blue-700 font-semibold mt-0.5">@item.gia_ban.ToString("N0")</div>
-                            <button class="mt-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                                    data-id="@item.id"
-                                    data-name="@item.ten_hang"
-                                    data-price="@item.gia_ban">
-                                Thêm
-                            </button>
-                        </div>
-                    }
+                <div id="productGridContainer" class="relative overflow-hidden w-[780px]">
+                    <div id="productGrid" class="grid grid-cols-4 gap-x-4 gap-y-4 text-sm text-gray-900">
+                        @foreach (var item in Model)
+                        {
+                            <div class="product-item border rounded-lg p-4 shadow hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                                <div class="flex justify-center mb-2">
+                                    <img src="@item.hinh_anh" alt="@item.ten_hang" class="w-20 h-16 object-contain" />
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <div class="text-[13px] font-medium truncate w-[65%]">@item.ten_hang</div>
+                                    <div class="text-blue-700 font-bold text-[14px]">@item.gia_ban.ToString("N0")</div>
+                                </div>
+                                <button class="w-full mt-1 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                                        data-id="@item.id"
+                                        data-name="@item.ten_hang"
+                                        data-price="@item.gia_ban">
+                                    Thêm
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Nút chuyển trang -->
+                    <div class="flex justify-center items-center mt-4 space-x-4">
+                        <button id="prevBtn" onclick="prevPage()" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">&lt;&lt;</button>
+                        <span id="pageInfo" class="text-sm text-gray-600"></span>
+                        <button id="nextBtn" onclick="nextPage()" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">&gt;&gt;</button>
+                    </div>
                 </div>
 
                 <!-- Nút thanh toán -->
@@ -136,6 +131,7 @@
                     <select id="paymentMethod" class="border border-gray-300 rounded px-3 py-2 text-sm text-gray-800">
                         <option value="Tiền mặt">Tiền mặt</option>
                         <option value="Chuyển khoản">Chuyển khoản</option>
+                        <option value="Nợ">Nợ</option>
                     </select>
                     <button id="btnThanhToan" class="ml-auto bg-[#2a6de0] text-white font-semibold text-sm rounded-md px-8 py-3 hover:bg-[#1e4fcf] transition-colors">
                         THANH TOÁN
@@ -143,13 +139,803 @@
                 </div>
             </div>
         </div>
-
-
     </div>
-
 </body>
 @section scripts {
+
     <script>
+        // Khởi tạo IndexedDB
+        const dbName = "QLBanHangDB";
+        const storeName = "GioHangTheoHoaDon";
+        let db;
+
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = function (e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: "tabId" });
+            }
+        };
+        request.onsuccess = function (e) {
+            db = e.target.result;
+        };
+        request.onerror = function () {
+            console.error("Không mở được IndexedDB");
+        };
+
+        // Hàm lưu dữ liệu tab
+        function saveTabData(tabId, data) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("IndexedDB chưa sẵn sàng");
+                const tx = db.transaction(storeName, "readwrite");
+                const store = tx.objectStore(storeName);
+                const request = store.put({ tabId, data });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject("Lỗi khi lưu tab");
+            });
+        }
+
+        // Hàm lấy dữ liệu tab
+        function loadTabData(tabId) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("IndexedDB chưa sẵn sàng");
+                if (!tabId) {
+                    console.warn("TabId không hợp lệ:", tabId);
+                    return resolve({ tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                }
+
+                const tx = db.transaction(storeName, "readonly");
+                const store = tx.objectStore(storeName);
+                const req = store.get(tabId);
+                req.onsuccess = () => resolve(req.result?.data || { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                req.onerror = () => reject("Lỗi khi lấy tab");
+            });
+        }
+
+        // Hàm xóa tab
+        function deleteTabData(tabId) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("IndexedDB chưa sẵn sàng");
+                const tx = db.transaction(storeName, "readwrite");
+                const store = tx.objectStore(storeName);
+                const request = store.delete(tabId);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject("Lỗi khi xóa tab");
+            });
+        }
+
+        // Hàm lấy tất cả tab
+        function getAllTabs() {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("IndexedDB chưa sẵn sàng");
+                const tx = db.transaction(storeName, "readonly");
+                const store = tx.objectStore(storeName);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject("Lỗi khi lấy tất cả tab");
+            });
+        }
+
+        // Hàm xóa cache localStorage
+        function clearCache(tenKhach) {
+            if (tenKhach) {
+                localStorage.removeItem(`sanPhamChuaThanhToan_${tenKhach}`);
+                localStorage.removeItem(`lichChuaThanhToan_${tenKhach}`);
+            }
+        }
+
+        // Biến toàn cục
+        let soHoaDon = 1;
+        let hoaDonHienTai = "Hóa đơn 1"; // Khởi tạo tab mặc định
+        const tabContainer = document.getElementById("tabHoaDon");
+        const gioHangDiv = document.getElementById("gioHang");
+
+        async function renderSanPhamChuaThanhToan(name = null, force = false) {
+            if (renderSanPhamChuaThanhToan._isRendering) return;
+            renderSanPhamChuaThanhToan._isRendering = true;
+            try {
+                const sanPhamList = document.getElementById("sanPhamDaChon");
+                let tabData = await loadTabData(hoaDonHienTai);
+
+                // Nếu chưa truyền name thì lấy từ tab
+                if (!name || name.trim() === "") {
+                    const input = document.getElementById("khachHang");
+                    const inputName = input?.value?.trim();
+
+                    if (inputName) {
+                        name = inputName;
+                        tabData.tenKhach = inputName;
+                    } else {
+                        name = "Vãng lai"; // gán mặc định để tránh load lại
+                        tabData.tenKhach = ""; // vẫn giữ trống để không hiện lên view
+                    }
+
+                    await saveTabData(hoaDonHienTai, tabData);
+                }
+
+                // Sau khi cố gắng lấy tên vẫn không có hoặc là Vãng lai thì bỏ qua
+                if (!sanPhamList || name === "Vãng lai") {
+                    if (sanPhamList) sanPhamList.innerHTML = "";
+                    return;
+                }
+
+                // Xóa nội dung cũ trước khi render mới
+                sanPhamList.innerHTML = "<div class='text-sm text-gray-500'>Đang tải...</div>";
+
+                async function renderSP(data) {
+                    sanPhamList.innerHTML = "";
+                    if (!data || data.length === 0) {
+                        sanPhamList.innerHTML = "<div class='text-sm text-gray-500'>Không có sản phẩm chưa thanh toán.</div>";
+                        return;
+                    }
+
+                    const tabData = await loadTabData(hoaDonHienTai);
+                    const gioHangKeys = new Set(tabData.sanpham.map(sp => `${sp.item_id}_${sp.detail_id || 0}`));
+                    const unique = new Map();
+
+                    for (const sp of data) {
+                        if (!sp || sp.is_paid || !sp.item_id || sp.price <= 0) continue;
+
+                        const key = `${sp.item_id}_${sp.detail_id ?? 0}`;
+                        if (unique.has(key)) continue;
+                        if (gioHangKeys.has(key)) {
+                            console.log(`⚠️ Đã có sẵn trong giỏ hàng, bỏ qua: ${sp.name}`);
+                            continue;
+                        }
+
+                        unique.set(key, sp);
+
+                        // ✅ Thêm vào giỏ hàng thay vì hiển thị trực tiếp
+                        tabData.sanpham.push({
+                            item_id: sp.item_id,
+                            name: sp.name,
+                            price: sp.price,
+                            quantity: sp.quantity || 1,
+                            is_paid: false,
+                            detail_id: sp.id || 0
+                        });
+
+                        console.log("📌 Thêm SP chưa thanh toán vào giỏ:", sp.name);
+                    }
+
+                    await saveTabData(hoaDonHienTai, tabData);
+                    renderGioHang();
+                    await renderSanPhamChuaThanhToan(tabData.tenKhach?.trim(), true);
+
+
+                    // Sau khi đồng bộ giỏ hàng, xóa hiển thị phần này:
+                    sanPhamList.innerHTML = "<div class='text-sm text-gray-500'>Không có sản phẩm chưa thanh toán.</div>";
+                }
+
+
+                // Kiểm tra cache trong localStorage
+                if (!force) {
+                    const cachedData = localStorage.getItem(`sanPhamChuaThanhToan_${name}`);
+                    if (cachedData) {
+                        try {
+                            const data = JSON.parse(cachedData);
+                            if (Array.isArray(data) && data.length > 0) {
+                                await renderSP(data);
+                                return;
+                            }
+                        } catch (e) {
+                            console.error("Lỗi parse cache sản phẩm:", e);
+                        }
+                    }
+                }
+                else {
+                    localStorage.removeItem(`sanPhamChuaThanhToan_${name}`);
+                }
+
+                // Nếu không có cache, gọi API để lấy dữ liệu
+                try {
+                    const res = await fetch(`/QuanLyBanHang/GetSanPhamChuaThanhToan?name=${encodeURIComponent(name)}`);
+                    const result = await res.json();
+                    console.log("📦 API trả về sản phẩm chưa thanh toán:", result.data);
+
+                    if (result.success && Array.isArray(result.data)) {
+                        const validData = result.data.filter(item => item.item_id && item.price > 0 && !item.is_paid);
+                        localStorage.setItem(`sanPhamChuaThanhToan_${name}`, JSON.stringify(validData));
+                        await renderSP(validData);
+                    } else {
+                        localStorage.removeItem(`sanPhamChuaThanhToan_${name}`);
+                        await renderSP([]);
+                    }
+                } catch (err) {
+                    console.error("Lỗi khi lấy sản phẩm chưa thanh toán:", err);
+                    localStorage.removeItem(`sanPhamChuaThanhToan_${name}`);
+                    await renderSP([]);
+                }
+            }
+            finally {
+                renderSanPhamChuaThanhToan._isRendering = false;
+            }
+        }
+
+
+        // Hàm render lịch chưa thanh toán
+        async function renderLichChuaThanhToan(name = null, force = false) {
+            name = name ?? (await loadTabData(hoaDonHienTai)).tenKhach?.trim();
+            if (!name || name === "Vãng lai") {
+                document.getElementById("bookingList").innerHTML = "";
+                return;
+            }
+
+            const bookingList = document.getElementById("bookingList");
+            if (!bookingList) return;
+            bookingList.innerHTML = "<div class='text-sm text-gray-500'>Đang tải...</div>";
+
+            async function renderLich(data) {
+                bookingList.innerHTML = "";
+                if (!data || data.length === 0) {
+                    bookingList.innerHTML = "<div class='text-sm text-gray-500'>Không có lịch chưa thanh toán.</div>";
+                    return;
+                }
+
+                const tabData = await loadTabData(hoaDonHienTai);
+                const seen = new Set();
+                data.forEach(b => {
+                    if (!seen.has(b.id) && b.id && b.price > 0 && !b.is_paid) {
+                        seen.add(b.id);
+                        const div = document.createElement("div");
+                        div.className = "flex items-center bg-white p-2 rounded shadow border";
+                        div.innerHTML = `
+                                                            <div class="flex items-center space-x-2 w-full">
+                                                                <span class="text-sm flex-1 text-gray-800">
+                                                                    ${b.date} ${b.start_time} - ${b.end_time} (${b.court_name} - ${b.type})
+                                                                </span>
+                                                                <span class="font-semibold text-blue-600 whitespace-nowrap">${b.price.toLocaleString()} đ</span>
+                                                                <span class="ml-2 text-red-500 font-bold cursor-pointer btn-xoa-lich" data-id="${b.id}">×</span>
+                                                            </div>`;
+                        bookingList.appendChild(div);
+
+                        // Thêm lịch vào tabData.lich nếu chưa có
+                        if (!tabData.lich.find(x => x.booking_id === b.id)) {
+                            tabData.lich.push({
+                                booking_id: b.id,
+                                date: b.date,
+                                start_time: b.start_time,
+                                end_time: b.end_time,
+                                court_name: b.court_name,
+                                type: b.type,
+                                price: b.price,
+                                is_paid: false
+                            });
+                        }
+                    }
+                });
+
+                await saveTabData(hoaDonHienTai, tabData);
+                await updateTotal();
+                attachDeleteEventListeners();
+            }
+
+            if (!force) {
+                const cachedData = localStorage.getItem(`lichChuaThanhToan_${name}`);
+                if (cachedData) {
+                    try {
+                        const data = JSON.parse(cachedData);
+                        if (Array.isArray(data) && data.length > 0) {
+                            await renderLich(data);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Lỗi parse cache lịch:", e);
+                    }
+                }
+            }
+
+            try {
+                const res = await fetch(`/QuanLyBanHang/GetLichChuaThanhToan?name=${encodeURIComponent(name)}`);
+                const result = await res.json();
+                if (result.success && Array.isArray(result.data)) {
+                    const validData = result.data.filter(item => item.id && item.price > 0 && !item.is_paid);
+                    localStorage.setItem(`lichChuaThanhToan_${name}`, JSON.stringify(validData));
+                    await renderLich(validData);
+                } else {
+                    localStorage.removeItem(`lichChuaThanhToan_${name}`);
+                    await renderLich([]);
+                }
+            } catch (err) {
+                console.error("Lỗi khi lấy lịch chưa thanh toán:", err);
+                localStorage.removeItem(`lichChuaThanhToan_${name}`);
+                await renderLich([]);
+            }
+        }
+
+        // Hàm gắn sự kiện xóa
+        function attachDeleteEventListeners() {
+            document.querySelectorAll(".btn-xoa-sp").forEach(btn => {
+                btn.onclick = async () => {
+                    const itemId = parseInt(btn.getAttribute("data-id"));
+                    const detailId = parseInt(btn.getAttribute("data-detail-id") || 0);
+                    const tabData = await loadTabData(hoaDonHienTai);
+                    const tenKhach = tabData.tenKhach?.trim();
+
+                    // Xóa sản phẩm khỏi giỏ hàng
+                    tabData.sanpham = tabData.sanpham.filter(sp => sp.item_id !== itemId || sp.detail_id !== detailId);
+                    await saveTabData(hoaDonHienTai, tabData);
+                    renderGioHang();
+
+                    if (tenKhach && tenKhach !== "Vãng lai") {
+                        try {
+                            const res = await fetch('/QuanLyBanHang/XoaSanPhamChuaThanhToan', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ item_id: itemId, name: tenKhach, detail_id: detailId })
+                            });
+                            const result = await res.json();
+                            if (result.success) {
+                                localStorage.removeItem(`sanPhamChuaThanhToan_${tenKhach}`);
+                                await renderSanPhamChuaThanhToan(tenKhach, true);
+                                await updateTotal();
+                            } else {
+                                alert(result.message);
+                            }
+                        } catch (err) {
+                            console.error("Lỗi khi xóa sản phẩm:", err);
+                            alert("Đã xảy ra lỗi khi xóa sản phẩm.");
+                        }
+                    } else {
+                        await updateTotal();
+                    }
+                };
+            });
+
+            document.querySelectorAll(".btn-xoa-lich").forEach(btn => {
+                btn.onclick = async () => {
+                    const bookingId = parseInt(btn.getAttribute("data-id"));
+                    const tabData = await loadTabData(hoaDonHienTai);
+                    const tenKhach = tabData.tenKhach?.trim();
+
+                    if (!tenKhach || tenKhach === "Vãng lai") {
+                        alert("Vui lòng nhập tên khách hàng trước khi xóa.");
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch('/QuanLyBanHang/XoaLichChuaThanhToan', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ booking_id: bookingId, name: tenKhach })
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                            tabData.lich = tabData.lich.filter(l => l.booking_id !== bookingId);
+                            await saveTabData(hoaDonHienTai, tabData);
+                            localStorage.removeItem(`lichChuaThanhToan_${tenKhach}`);
+                            await renderLichChuaThanhToan(tenKhach, true);
+                            await updateTotal();
+                        } else {
+                            alert(result.message);
+                        }
+                    } catch (err) {
+                        console.error("Lỗi khi xóa lịch:", err);
+                        alert("Đã xảy ra lỗi khi xóa lịch.");
+                    }
+                };
+            });
+        }
+
+        async function switchTab(tabName) {
+            if (!tabName) return;
+
+            let tabData = await loadTabData(tabName);
+            if (!tabData.sanpham) {
+                tabData = { tenKhach: "", sanpham: [], lich: [], isDebt: false };
+                await saveTabData(tabName, tabData);
+            }
+
+            hoaDonHienTai = tabName;
+            localStorage.setItem("hoaDonHienTai", tabName);
+
+            // 👉 Reset màu tất cả tab
+            document.querySelectorAll("#tabHoaDon .tab").forEach(t => {
+                t.classList.remove("tab-active", "tab-debt", "bg-blue-600", "text-white");
+                t.classList.add("bg-gray-100", "text-gray-700");
+            });
+
+            let tab = document.querySelector(`#tabHoaDon .tab[data-id="${tabName}"]`);
+
+            // 👉 Nếu tab chưa tồn tại → tạo mới
+            if (!tab) {
+                tab = document.createElement("div");
+                tab.className = `tab bg-gray-100 text-gray-700 px-4 py-1 rounded-full text-sm font-semibold select-none cursor-pointer flex items-center space-x-1`;
+                tab.dataset.id = tabName;
+
+                const label = document.createElement("span");
+                label.innerText = tabData.tenKhach ? `Hóa đơn ${tabData.tenKhach}` : tabName;
+                if (!label.hasAttribute("data-bound")) {
+                    label.setAttribute("data-bound", "1");
+                    label.addEventListener("click", () => switchTab(tabName));
+                }
+
+                const closeBtn = document.createElement("span");
+                closeBtn.innerText = "×";
+                closeBtn.className = "ml-2 cursor-pointer";
+                closeBtn.onclick = async e => {
+                    e.stopPropagation();
+                    const tenKhach = (await loadTabData(tabName)).tenKhach;
+                    clearCache(tenKhach);
+                    await deleteTabData(tabName);
+                    tab.remove();
+
+                    const remainTabs = await getAllTabs();
+                    if (remainTabs.length > 0) {
+                        await switchTab(remainTabs[0].tabId);
+                    } else {
+                        soHoaDon = 1;
+                        hoaDonHienTai = `Hóa đơn ${soHoaDon++}`;
+                        await saveTabData(hoaDonHienTai, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                        await switchTab(hoaDonHienTai);
+                    }
+                };
+
+                tab.append(label, closeBtn);
+                tabContainer.insertBefore(tab, document.getElementById("btnThemHoaDon"));
+            }
+
+
+            // 👉 Cập nhật lại tab đang active
+            tab.classList.remove("bg-gray-100", "text-gray-700");
+            tab.classList.add("tab-active", "bg-blue-600", "text-white");
+            if (tabData.isDebt) tab.classList.add("tab-debt");
+
+            // 👉 Gán lại tên khách
+            document.getElementById("khachHang").value = tabData.tenKhach || "";
+
+            // 👉 Gọi lại các phần render
+            await renderSanPhamChuaThanhToan(tabData.tenKhach?.trim(), true);
+            await renderLichChuaThanhToan(tabData.tenKhach?.trim(), true);
+            renderGioHang();
+
+            document.querySelectorAll("#tabHoaDon .tab").forEach(t => {
+                const id = t.dataset.id;
+                if (!t.hasAttribute("data-bound")) {
+                    t.setAttribute("data-bound", "1");
+                    t.addEventListener("click", () => switchTab(id));
+                }
+            });
+        }
+
+
+
+        // Khởi tạo khi tải trang
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                // Đợi database sẵn sàng
+                await new Promise((resolve, reject) => {
+                    if (db) return resolve();
+                    request.onsuccess = () => {
+                        db = request.result;
+                        resolve();
+                    };
+                    request.onerror = () => reject("Lỗi khi mở IndexedDB");
+                });
+
+                let allTabs = await getAllTabs();
+                let savedHoaDonHienTai = localStorage.getItem("hoaDonHienTai");
+
+                if (allTabs.length === 0) {
+                    await saveTabData(hoaDonHienTai, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                    allTabs = [{ tabId: hoaDonHienTai, data: { tenKhach: "", sanpham: [], lich: [], isDebt: false } }];
+                } else if (savedHoaDonHienTai && allTabs.find(t => t.tabId === savedHoaDonHienTai)) {
+                    hoaDonHienTai = savedHoaDonHienTai;
+                    soHoaDon = Math.max(...allTabs.map(t => parseInt(t.tabId.split(" ")[2]) || 1)) + 1;
+                } else {
+                    hoaDonHienTai = allTabs[0].tabId;
+                    soHoaDon = Math.max(...allTabs.map(t => parseInt(t.tabId.split(" ")[2]) || 1)) + 1;
+                    localStorage.setItem("hoaDonHienTai", hoaDonHienTai);
+                }
+
+                const tabContainer = document.getElementById("tabHoaDon");
+                for (const tab of allTabs) {
+                    if (!document.querySelector(`#tabHoaDon .tab[data-id="${tab.tabId}"]`)) {
+                        const tabData = tab.data;
+                        const newTab = document.createElement("div");
+                        newTab.className = `bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold select-none cursor-pointer tab ${tab.tabId === hoaDonHienTai ? 'tab-active' : ''} ${tabData.isDebt ? 'tab-debt' : ''} flex items-center space-x-1`;
+                        newTab.setAttribute("data-id", tab.tabId);
+
+                        const label = document.createElement("span");
+                        label.innerText = tabData.tenKhach ? `Hóa đơn ${tabData.tenKhach}` : tab.tabId;
+                        label.onclick = () => switchTab(tab.tabId);
+
+                        const closeBtn = document.createElement("span");
+                        closeBtn.innerText = "×";
+                        closeBtn.className = "ml-2 cursor-pointer";
+                        closeBtn.onclick = async e => {
+                            e.stopPropagation();
+                            clearCache(tabData.tenKhach);
+                            await deleteTabData(tab.tabId);
+                            newTab.remove();
+
+                            const remainTabs = await getAllTabs();
+                            if (remainTabs.length > 0) {
+                                await switchTab(remainTabs[0].tabId);
+                            } else {
+                                soHoaDon = 1;
+                                hoaDonHienTai = `Hóa đơn ${soHoaDon++}`;
+                                await saveTabData(hoaDonHienTai, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                                await switchTab(hoaDonHienTai);
+                            }
+                        };
+
+                        newTab.appendChild(label);
+                        newTab.appendChild(closeBtn);
+                        tabContainer?.insertBefore(newTab, document.getElementById("btnThemHoaDon"));
+                    }
+                }
+
+                await switchTab(hoaDonHienTai);
+
+                document.querySelectorAll("#tabHoaDon .tab").forEach(t => {
+                    const tabId = t.getAttribute("data-id");
+                    if (tabId !== hoaDonHienTai && !t.hasAttribute("data-bound")) {
+                        t.setAttribute("data-bound", "1");
+                        t.onclick = () => switchTab(tabId);
+                    }
+                });
+
+                const btnThem = document.getElementById("btnThemHoaDon");
+                if (btnThem) {
+                    btnThem.addEventListener("click", async () => {
+                        const newTabName = `Hóa đơn ${soHoaDon++}`;
+                        await saveTabData(newTabName, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                        await switchTab(newTabName);
+                    });
+                }
+
+                const grid = document.querySelector(".grid.grid-cols-4");
+                if (grid) {
+                    grid.addEventListener("click", async function (e) {
+                        const button = e.target.closest("button[data-id]");
+                        if (button) {
+                            const itemId = parseInt(button.getAttribute("data-id"));
+                            const name = button.getAttribute("data-name");
+                            const price = parseInt(button.getAttribute("data-price"));
+
+                            if (itemId && name && price) {
+                                if (!hoaDonHienTai) {
+                                    hoaDonHienTai = `Hóa đơn ${soHoaDon++}`;
+                                    await saveTabData(hoaDonHienTai, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                                    await switchTab(hoaDonHienTai);
+                                }
+
+                                const tabData = await loadTabData(hoaDonHienTai);
+                                let sp = tabData.sanpham.find(x => x.item_id === itemId && x.detail_id === 0);
+                                if (sp) {
+                                    sp.quantity = (sp.quantity || 0) + 1;
+                                } else {
+                                    tabData.sanpham.push({ item_id: itemId, name, price, quantity: 1, is_paid: false, detail_id: 0 });
+                                }
+                                await saveTabData(hoaDonHienTai, tabData);
+                                renderGioHang();
+                                await updateTotal();
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi khi khởi tạo:", err);
+                alert("Đã xảy ra lỗi khi khởi tạo trang. Vui lòng thử lại.");
+            }
+        });
+
+        document.getElementById("khachHang").addEventListener("input", async function () {
+            const tenKhach = this.value.trim();
+            const tabData = await loadTabData(hoaDonHienTai);
+            const oldTenKhach = tabData.tenKhach;
+
+            if (oldTenKhach && oldTenKhach !== tenKhach) {
+                clearCache(oldTenKhach);
+            }
+
+            tabData.tenKhach = tenKhach;
+            await saveTabData(hoaDonHienTai, tabData);
+            const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
+            if (tab) {
+                tab.querySelector("span").innerText = tenKhach ? `Hóa đơn ${tenKhach}` : hoaDonHienTai;
+            }
+
+            await renderLichChuaThanhToan(tenKhach, true);
+            await renderSanPhamChuaThanhToan(tabData.tenKhach?.trim(), true);
+
+        });
+
+        // Render giỏ hàng
+        function renderGioHang() {
+            gioHangDiv.innerHTML = "";
+            let tong = 0;
+
+            loadTabData(hoaDonHienTai).then(tabData => {
+                const sanpham = tabData.sanpham || [];
+                sanpham.forEach(sp => {
+                    const item = document.createElement("div");
+                    item.className = "flex items-center justify-between bg-white p-2 rounded shadow border";
+                    item.innerHTML = `
+                                                        <div class="flex items-center space-x-2 w-full">
+                                                            <span class="text-sm text-gray-800 flex-1">${sp.name}</span>
+                                                            <div class="flex items-center space-x-1">
+                                                                <button class="btn-giam px-2 py-1 border rounded text-xs" data-id="${sp.item_id}" data-detail-id="${sp.detail_id || 0}">–</button>
+                                                                <span class="text-sm px-1">${sp.quantity || 1}</span>
+                                                                <button class="btn-tang px-2 py-1 border rounded text-xs" data-id="${sp.item_id}" data-detail-id="${sp.detail_id || 0}">+</button>
+                                                            </div>
+                                                            <span class="font-semibold text-blue-600 whitespace-nowrap">${(sp.price * (sp.quantity || 1)).toLocaleString()} đ</span>
+                                                            <span class="ml-2 text-red-500 font-bold cursor-pointer btn-xoa-sp" data-id="${sp.item_id}" data-detail-id="${sp.detail_id || 0}">×</span>
+                                                        </div>`;
+                    gioHangDiv.appendChild(item);
+                    if (!sp.is_paid) tong += sp.price * (sp.quantity || 1);
+                });
+
+                document.getElementById("tongTienHang").innerText = tong.toLocaleString() + " đ";
+                attachDeleteEventListeners();
+
+                document.querySelectorAll(".btn-giam").forEach(btn => {
+                    btn.onclick = async () => {
+                        const id = parseInt(btn.getAttribute("data-id"));
+                        const detailId = parseInt(btn.getAttribute("data-detail-id") || 0);
+                        const tabData = await loadTabData(hoaDonHienTai);
+                        let sp = tabData.sanpham.find(x => x.item_id === id && x.detail_id === detailId);
+                        if (sp && sp.quantity > 1) {
+                            sp.quantity--;
+                            await saveTabData(hoaDonHienTai, tabData);
+                            renderGioHang();
+                            await updateTotal();
+                        } else if (sp && sp.quantity === 1) {
+                            tabData.sanpham = tabData.sanpham.filter(x => x.item_id !== id || x.detail_id !== detailId);
+                            await saveTabData(hoaDonHienTai, tabData);
+                            renderGioHang();
+                            await updateTotal();
+                        }
+                    };
+                });
+
+                document.querySelectorAll(".btn-tang").forEach(btn => {
+                    btn.onclick = async () => {
+                        const id = parseInt(btn.getAttribute("data-id"));
+                        const detailId = parseInt(btn.getAttribute("data-detail-id") || 0);
+                        const tabData = await loadTabData(hoaDonHienTai);
+                        let sp = tabData.sanpham.find(x => x.item_id === id && x.detail_id === detailId);
+                        if (sp) {
+                            sp.quantity++;
+                        } else {
+                            const button = document.querySelector(`button[data-id="${id}"]`);
+                            if (button) {
+                                const name = button.getAttribute("data-name");
+                                const price = parseInt(button.getAttribute("data-price"));
+                                tabData.sanpham.push({ item_id: id, name, price, quantity: 1, is_paid: false, detail_id: 0 });
+                            }
+                        }
+                        await saveTabData(hoaDonHienTai, tabData);
+                        renderGioHang();
+                        await updateTotal();
+                    };
+                });
+            }).catch(err => {
+                console.error("Lỗi khi render giỏ hàng:", err);
+                document.getElementById("tongTienHang").innerText = "0 đ";
+            });
+        }
+
+        // Cập nhật tổng tiền
+        async function updateTotal() {
+            if (!hoaDonHienTai) return;
+            let total = 0;
+            try {
+                const tabData = await loadTabData(hoaDonHienTai);
+                const sanpham = tabData.sanpham || [];
+                const seenItems = new Set();
+
+                // Tính tổng từ giỏ hàng (tabData.sanpham)
+                sanpham.forEach(sp => {
+                    if (!sp.is_paid) {
+                        total += sp.price * (sp.quantity || 1);
+                        seenItems.add(`${sp.item_id}_${sp.detail_id || 0}`);
+                    }
+                });
+
+                // Tính tổng từ lịch chưa thanh toán (tabData.lich)
+                const lich = tabData.lich || [];
+                lich.forEach(b => {
+                    if (!b.is_paid) total += b.price;
+                });
+
+                document.getElementById("tongTienHang").innerText = total.toLocaleString() + " đ";
+            } catch (err) {
+                console.error("Lỗi khi cập nhật tổng tiền:", err);
+                document.getElementById("tongTienHang").innerText = "0 đ";
+            }
+        }
+
+        // Xử lý thanh toán
+        document.getElementById("btnThanhToan").onclick = async function () {
+            if (!hoaDonHienTai) {
+                alert("Vui lòng tạo hóa đơn trước.");
+                return;
+            }
+
+            const tabData = await loadTabData(hoaDonHienTai);
+            const tenKhach = tabData.tenKhach?.trim();
+            const method = document.getElementById("paymentMethod").value;
+            const isPaid = method !== "Nợ";
+
+            const item_ids = [], item_detail_ids = [], quantities = [], item_is_paid = [];
+            const booking_ids = [], booking_is_paid = [];
+
+            tabData.sanpham.forEach(sp => {
+                item_ids.push(sp.item_id);
+                item_detail_ids.push(sp.detail_id || 0);
+                quantities.push(sp.quantity || 1);
+                item_is_paid.push(isPaid);
+            });
+
+            tabData.lich.forEach(b => {
+                booking_ids.push(b.booking_id);
+                booking_is_paid.push(isPaid);
+            });
+
+            if (item_ids.length === 0 && booking_ids.length === 0) {
+                alert("Không có gì để thanh toán.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/QuanLyBanHang/LuuHoaDon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: tenKhach || "",
+                        phone: "",
+                        item_ids,
+                        item_detail_ids,
+                        quantities,
+                        item_is_paid,
+                        booking_ids,
+                        booking_is_paid,
+                        payment_method: method
+                    })
+                });
+                const result = await res.json();
+                alert(result.message);
+                if (!result.success) return;
+
+                tabData.isDebt = !isPaid;
+                const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
+                if (tab) {
+                    if (isPaid) tab.classList.remove("tab-debt");
+                    else tab.classList.add("tab-debt");
+                }
+
+                clearCache(tenKhach);
+
+                if (isPaid) {
+                    await deleteTabData(hoaDonHienTai);
+                    document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`)?.remove();
+                    const remainTabs = await getAllTabs();
+                    if (remainTabs.length > 0) {
+                        await switchTab(remainTabs[0].tabId);
+                    } else {
+                        soHoaDon = 1;
+                        hoaDonHienTai = `Hóa đơn ${soHoaDon++}`;
+                        await saveTabData(hoaDonHienTai, { tenKhach: "", sanpham: [], lich: [], isDebt: false });
+                        await switchTab(hoaDonHienTai);
+                    }
+                } else {
+                    tabData.sanpham = [];
+                    tabData.lich = [];
+                    await saveTabData(hoaDonHienTai, tabData);
+                    renderGioHang();
+                    await renderSanPhamChuaThanhToan(tenKhach, true);
+                    await renderLichChuaThanhToan(tenKhach, true);
+                    await updateTotal();
+                }
+            } catch (err) {
+                console.error("Lỗi thanh toán:", err);
+                alert("Lỗi xảy ra khi thanh toán.");
+            }
+        };
+
+        // Xử lý modal thêm mặt hàng
         document.getElementById('btnOpenModal').onclick = function () {
             document.getElementById('modalMatHang').classList.remove('hidden');
         };
@@ -158,380 +944,53 @@
             document.getElementById('modalMatHang').classList.add('hidden');
         };
 
-        document.getElementById('formMatHang').onsubmit = function (e) {
+        document.getElementById('formMatHang').onsubmit = async function (e) {
             e.preventDefault();
             const formData = new URLSearchParams(new FormData(this));
-
-            fetch('/QuanLyBanHang/TaoMatHang', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            })
-                .then(res => res.json())
-                .then(res => {
-                    alert(res.message);
-                    if (res.success) location.reload();
+            try {
+                const res = await fetch('/QuanLyBanHang/TaoMatHang', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
                 });
+                const result = await res.json();
+                alert(result.message);
+                if (result.success) location.reload();
+            } catch (err) {
+                console.error("Lỗi khi tạo mặt hàng:", err);
+            }
         };
+
+
     </script>
     <script>
-        let soHoaDon = 1;
-        let hoaDons = {
-            1: {
-                tenKhach: "",
-                gioHang: []
-            }
-        };
-        let hoaDonHienTai = 1;
+        let currentPage = 1;
+        const pageSize = 16;
 
-        const tabContainer = document.getElementById("tabHoaDon");
-        const gioHangDiv = document.getElementById("gioHang");
-        //==================================================================================================================================
-        function renderSanPhamChuaThanhToan() {
-            const name = hoaDons[hoaDonHienTai].tenKhach?.trim();
-            const gioHangDiv = document.getElementById("gioHang");
-            if (!name) return;
+        function renderProducts() {
+            const allItems = document.querySelectorAll(".product-item");
+            const totalPages = Math.ceil(allItems.length / pageSize);
 
-            fetch("/QuanLyBanHang/GetSanPhamChuaThanhToan?name=" + encodeURIComponent(name))
-                .then(res => res.json())
-                .then(res => {
-                    console.log("👉 Kết quả sản phẩm chưa thanh toán:", res); // <- thêm dòng này
-
-                    if (res.success && res.data.length > 0) {
-                        res.data.forEach(sp => {
-                            const index = hoaDons[hoaDonHienTai].gioHang.findIndex(x => x.id == sp.item_id);
-                            if (index >= 0) {
-                                hoaDons[hoaDonHienTai].gioHang[index].quantity = (hoaDons[hoaDonHienTai].gioHang[index].quantity || 1) + 1;
-                            } else {
-                                hoaDons[hoaDonHienTai].gioHang.push({
-                                    id: sp.item_id,
-                                    name: sp.name,
-                                    price: sp.price,
-                                    quantity: 1
-                                });
-                            }
-                        });
-                        renderGioHang();
-                        updateTotal();
-                    }
-                });
-        }
-        //==================================================================================================================================
-        function renderLichChuaThanhToan() {
-            const name = hoaDons[hoaDonHienTai].tenKhach?.trim();
-            const bookingList = document.getElementById("bookingList");
-            bookingList.innerHTML = "";
-
-            if (!name) return;
-
-            fetch("/QuanLyBanHang/GetLichChuaThanhToan?name=" + encodeURIComponent(name))
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success && res.data.length > 0) {
-                        res.data.forEach(b => {
-                            const div = document.createElement("div");
-                            div.className = "flex items-center bg-white p-2 rounded shadow border";
-                            div.innerHTML = `
-                        <label class="flex items-center space-x-2 w-full">
-                            <input type="checkbox" class="check-booking" data-id="${b.id}" data-price="${b.price}" checked />
-                            <span class="text-sm flex-1 text-gray-800">
-                                ${b.date} ${b.start_time} - ${b.end_time} (${b.court_name} - ${b.type})
-                            </span>
-                            <span class="font-semibold text-blue-600 whitespace-nowrap">${b.price.toLocaleString()} đ</span>
-                        </label>`;
-                            bookingList.appendChild(div);
-                        });
-                        updateCheckboxEvents();
-                        updateTotal();
-                    }
-                });
-        }
-        //==================================================================================================================================
-        function switchTab(id) {
-            hoaDonHienTai = id;
-            document.querySelectorAll("#tabHoaDon .tab").forEach(tab => tab.classList.remove("tab-active"));
-
-            let existingTab = document.querySelector(`#tabHoaDon .tab[data-id="${id}"]`);
-            if (!existingTab) {
-                const newTab = document.createElement("div");
-                newTab.className = "bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold select-none cursor-pointer tab tab-active flex items-center space-x-1";
-                newTab.setAttribute("data-id", id);
-
-                const label = document.createElement("span");
-                label.innerText = "Hóa đơn " + id;
-                label.onclick = () => switchTab(id);
-
-                const closeBtn = document.createElement("span");
-                closeBtn.innerText = "×";
-                closeBtn.className = "ml-2 cursor-pointer";
-                closeBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (id === 1) {
-                        hoaDons[1] = { tenKhach: "", gioHang: [] };
-                        document.getElementById("khachHang").value = "";
-                        document.getElementById("bookingList").innerHTML = "";
-                        renderGioHang();
-                        updateTotal();
-                        renderLichChuaThanhToan();
-                        renderSanPhamChuaThanhToan();
-                        const tab = document.querySelector(`#tabHoaDon .tab[data-id="1"]`);
-                        if (tab) tab.querySelector("span").innerText = "Hóa đơn 1";
-                    } else {
-                        delete hoaDons[id];
-                        newTab.remove();
-                        const remaining = Object.keys(hoaDons);
-                        switchTab(parseInt(remaining[0]));
-                    }
-                };
-
-                newTab.appendChild(label);
-                newTab.appendChild(closeBtn); // luôn gắn dấu ×
-
-                const btnThem = document.getElementById("btnThemHoaDon");
-                btnThem.parentNode.insertBefore(newTab, btnThem);
-            } else {
-                existingTab.classList.add("tab-active");
-            }
-
-            document.getElementById("khachHang").value = hoaDons[id].tenKhach || "";
-            renderGioHang();
-            renderLichChuaThanhToan();
-            renderSanPhamChuaThanhToan();
-        }
-        //==================================================================================================================================
-        document.getElementById("btnThemHoaDon").onclick = function () {
-            soHoaDon++;
-            hoaDons[soHoaDon] = { tenKhach: "", gioHang: [] };
-            switchTab(soHoaDon);
-        };
-
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll("#tabHoaDon .tab").forEach(tab => {
-                tab.addEventListener("click", function () {
-                    const id = parseInt(this.getAttribute("data-id"));
-                    switchTab(id);
-                });
+            allItems.forEach((el, idx) => {
+                el.style.display = (idx >= (currentPage - 1) * pageSize && idx < currentPage * pageSize) ? "block" : "none";
             });
 
-            switchTab(1);
-            const tab1 = document.querySelector(`#tabHoaDon .tab[data-id="1"]`);
-            if (tab1 && !tab1.querySelector(".btn-close")) {
-                const closeBtn = document.createElement("span");
-                closeBtn.innerText = "×";
-                closeBtn.className = "ml-2 cursor-pointer btn-close";
-                closeBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    hoaDons[1] = { tenKhach: "", gioHang: [] };
-                    document.getElementById("khachHang").value = "";
-                    document.getElementById("bookingList").innerHTML = "";
-                    renderGioHang();
-                    updateTotal();
-                    renderLichChuaThanhToan();
-                    renderSanPhamChuaThanhToan();
-                    tab1.querySelector("span").innerText = "Hóa đơn 1";
-                };
-                tab1.appendChild(closeBtn);
-            }
-        });
-        //==================================================================================================================================
-        document.getElementById("khachHang").addEventListener("input", function () {
-            const name = this.value.trim();
-            hoaDons[hoaDonHienTai].tenKhach = name;
-            const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
-            if (tab) {
-                tab.querySelector("span").innerText = name ? "Hóa đơn " + name : "Hóa đơn " + hoaDonHienTai;
-            }
-
-            // Gọi API lấy lịch chưa thanh toán
-            fetch("/QuanLyBanHang/GetLichChuaThanhToan?name=" + encodeURIComponent(name))
-                .then(res => res.json())
-                .then(res => {
-                    const bookingList = document.getElementById("bookingList");
-                    bookingList.innerHTML = "";
-
-                    if (res.success && res.data.length > 0) {
-                        res.data.forEach(b => {
-                            const div = document.createElement("div");
-                            div.className = "flex items-center bg-white p-2 rounded shadow border";
-                            div.innerHTML = `
-                                <label class="flex items-center space-x-2 w-full">
-                                    <input type="checkbox" class="check-booking" data-id="${b.id}" data-price="${b.price}" checked />
-                                    <span class="text-sm flex-1 text-gray-800">
-                                        ${b.date} ${b.start_time} - ${b.end_time} (${b.court_name} - ${b.type})
-                                    </span>
-                                    <span class="font-semibold text-blue-600 whitespace-nowrap">${b.price.toLocaleString()} đ</span>
-                                </label>`;
-                            bookingList.appendChild(div);
-                        });
-                        updateCheckboxEvents();
-                        updateTotal();
-                    }
-                });
-            renderSanPhamChuaThanhToan(); 
-        });
-        //==================================================================================================================================
-        document.querySelectorAll("button[data-id]").forEach(button => {
-            button.addEventListener("click", () => {
-                const id = parseInt(button.getAttribute("data-id"));
-                const name = button.getAttribute("data-name");
-                const price = parseInt(button.getAttribute("data-price"));
-
-                let gioHang = hoaDons[hoaDonHienTai].gioHang;
-                let sp = gioHang.find(x => x.id === id);
-                if (sp) {
-                    sp.quantity += 1;
-                } else {
-                    gioHang.push({ id, name, price, quantity: 1 });
-                }
-                renderGioHang();
-                updateTotal(); 
-            });
-        });
-        //==================================================================================================================================
-        function renderGioHang() {
-            gioHangDiv.innerHTML = "";
-            let tong = 0;
-
-            hoaDons[hoaDonHienTai].gioHang.forEach(sp => {
-                const item = document.createElement("div");
-                item.className = "flex items-center justify-between bg-white p-2 rounded shadow border";
-                item.innerHTML = `
-            <label class="flex items-center space-x-2 w-full">
-                <input type="checkbox" class="check-sanpham" data-id="${sp.id}" data-price="${sp.price}" checked />
-                <span class="text-sm text-gray-800 flex-1">${sp.name}</span>
-                <div class="flex items-center space-x-1">
-                    <button class="btn-giam px-2 py-1 border rounded text-xs" data-id="${sp.id}">–</button>
-                    <span class="text-sm px-1">${sp.quantity}</span>
-                    <button class="btn-tang px-2 py-1 border rounded text-xs" data-id="${sp.id}">+</button>
-                </div>
-                <span class="font-semibold text-blue-600 whitespace-nowrap">${(sp.price * sp.quantity).toLocaleString()} đ</span>
-                <span class="ml-2 text-red-500 font-bold cursor-pointer btn-xoa-sp" data-id="${sp.id}">×</span>
-            </label>`;
-
-                gioHangDiv.appendChild(item);
-                tong += sp.price * sp.quantity;
-            });
-
-            document.getElementById("tongTienHang").innerText = tong.toLocaleString() + " đ";
-            updateCheckboxEvents();
-
-            // Nút xoá
-            document.querySelectorAll(".btn-xoa-sp").forEach(btn => {
-                btn.onclick = () => {
-                    const id = parseInt(btn.getAttribute("data-id"));
-                    hoaDons[hoaDonHienTai].gioHang = hoaDons[hoaDonHienTai].gioHang.filter(sp => sp.id !== id);
-                    renderGioHang();
-                    updateTotal();
-                };
-            });
-
-            // Nút tăng/giảm
-            document.querySelectorAll(".btn-giam").forEach(btn => {
-                btn.onclick = () => {
-                    const id = parseInt(btn.getAttribute("data-id"));
-                    let sp = hoaDons[hoaDonHienTai].gioHang.find(x => x.id === id);
-                    if (sp.quantity > 1) sp.quantity--;
-                    renderGioHang();
-                    updateTotal();
-                };
-            });
-            document.querySelectorAll(".btn-tang").forEach(btn => {
-                btn.onclick = () => {
-                    const id = parseInt(btn.getAttribute("data-id"));
-                    let sp = hoaDons[hoaDonHienTai].gioHang.find(x => x.id === id);
-                    if (!sp.quantity) sp.quantity = 1;
-                    sp.quantity++;
-                    renderGioHang();
-                    updateTotal();
-                };
-            });
-        }
-        //==================================================================================================================================
-
-        function updateCheckboxEvents() {
-            document.querySelectorAll(".check-sanpham, .check-booking").forEach(cb => {
-                cb.onchange = updateTotal;
-            });
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
+            document.getElementById("pageInfo").innerText = `Trang ${currentPage} / ${totalPages}`;
         }
 
-        function updateTotal() {
-            let total = 0;
-            document.querySelectorAll(".check-sanpham:checked, .check-booking:checked").forEach(cb => {
-                total += parseInt(cb.getAttribute("data-price"));
-            });
-            document.getElementById("tongTienHang").innerText = total.toLocaleString() + " đ";
+        function nextPage() {
+            currentPage++;
+            renderProducts();
         }
 
-        document.getElementById("btnThanhToan").onclick = function () {
-            const sanPhamEls = document.querySelectorAll(".check-sanpham");
-            const bookingEls = document.querySelectorAll(".check-booking");
+        function prevPage() {
+            if (currentPage > 1) currentPage--;
+            renderProducts();
+        }
 
-            const item_ids = [], quantities = [], item_is_paid = [];
-            sanPhamEls.forEach(cb => {
-                item_ids.push(cb.getAttribute("data-id"));
-                const sp = hoaDons[hoaDonHienTai].gioHang.find(x => x.id == cb.getAttribute("data-id"));
-                quantities.push(sp.quantity);
-                item_is_paid.push(cb.checked); // dù có check hay không vẫn đẩy lên
-            });
-
-            const booking_ids = [], booking_is_paid = [];
-            bookingEls.forEach(cb => {
-                if (cb.checked) {
-                    booking_ids.push(cb.getAttribute("data-id"));
-                    booking_is_paid.push(true);
-                }
-            });
-
-            // Kiểm tra nếu không có gì được check
-            if (item_ids.length === 0 && bookingEls.length === 0) {
-                alert("Không có sản phẩm hay lịch sân nào trong hóa đơn.");
-                return;
-            }
-
-            fetch('/QuanLyBanHang/LuuHoaDon', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: hoaDons[hoaDonHienTai].tenKhach,
-                    phone: "",
-                    item_ids,
-                    quantities,
-                    item_is_paid,
-                    booking_ids,
-                    booking_is_paid,
-                    payment_method: document.getElementById("paymentMethod").value
-                })
-            })
-                .then(res => res.json())
-                .then(res => {
-                    alert(res.message);
-                    if (res.success) {
-                        const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
-
-                        if (hoaDonHienTai === 1) {
-                            hoaDons[1] = { tenKhach: "", gioHang: [] };
-                            document.getElementById("khachHang").value = "";
-                            document.getElementById("bookingList").innerHTML = "";
-                            renderGioHang();
-                            updateTotal();
-                            const tab1 = document.querySelector(`#tabHoaDon .tab[data-id="1"]`);
-                            if (tab1) tab1.querySelector("span").innerText = "Hóa đơn 1";
-                        } else {
-                            delete hoaDons[hoaDonHienTai];
-                            if (tab) tab.remove();
-                            const remaining = Object.keys(hoaDons);
-                            if (remaining.length > 0) {
-                                switchTab(parseInt(remaining[0]));
-                            } else {
-                                soHoaDon++;
-                                hoaDons[soHoaDon] = { tenKhach: "", gioHang: [] };
-                                switchTab(soHoaDon);
-                            }
-                        }
-                    }
-                });
-        };
-        //==================================================================================================================================
+        document.addEventListener("DOMContentLoaded", renderProducts);
     </script>
-}
 
+}

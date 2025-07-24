@@ -1,6 +1,23 @@
 ﻿
 
- 
+let lastBookingTimestamp = "";
+
+
+
+function checkBookingChanges() {
+    $.getJSON("/Booking/GetLastBookingTimestamp", function (res) {
+        if (!res.lastUpdated) return;
+
+        if (res.lastUpdated !== lastBookingTimestamp) {
+            console.log("🔄 Có lịch mới:", res.lastUpdated);
+            lastBookingTimestamp = res.lastUpdated;
+            renderBookingTable();
+        } else {
+            console.log("✅ Không có thay đổi.");
+        }
+    });
+}
+
 
         // Hàm định dạng giờ
         function formatTime(hour) {
@@ -17,10 +34,10 @@
             return `${y}-${m}-${d}`;
         }
         // Hàm hiển thị/ẩn dropdown nền tảng
-        function togglePlatformDropdown() {
-            const dropdown = document.getElementById('platformDropdown');
-            dropdown.classList.toggle('hidden');
-        }
+function togglePlatformDropdown() {
+    const dropdown = document.getElementById('platformDropdown');
+    dropdown.classList.toggle('hidden');
+}
 
         function appendPlatform(platform) {
             const nameInput = document.getElementById('nameInput');
@@ -29,32 +46,106 @@
             document.getElementById('platformDropdown').classList.add('hidden');
         }
 
-        let isMouseDown = false;
-        let selectedCells = [];
-        let lastClickTime = 0;
+let isMouseDown = false;
+let selectedCells = [];
+let lastClickTime = 0;
+let bookingsCache = [];
 
         // Hàm chọn/bỏ chọn ô
-        function toggleCellSelection(cell, isCtrlPressed) {
-            if (isCtrlPressed) {
-                if (!cell.classList.contains('selected-cell')) {
-                    cell.classList.add('selected-cell');
-                    selectedCells.push(cell);
+function toggleCellSelection(cell, isCtrlPressed) {
+    console.log("🔍 Gọi toggleCellSelection:", {
+        court: cell.dataset.court,
+        date: cell.dataset.date,
+        hour: cell.dataset.hour,
+        isCtrlPressed,
+        hasCustomCell: cell.classList.contains('custom-cell')
+    });
 
-                    // Gán loại đang chọn và tô màu luôn
-                    cell.dataset.type = selectedType;
-                    if (selectedType === "pass sân") cell.style.backgroundColor = "#f87171";
-                    else if (selectedType === "cố định") cell.style.backgroundColor = "#60a5fa";
-                    else if (selectedType === "giờ chẵn") cell.style.backgroundColor = "#86efac";
-                    else if (selectedType === "giờ lẻ") cell.style.backgroundColor = "#fde68a";
-                    else cell.style.backgroundColor = "";
+    if (!cell.classList.contains('custom-cell')) {
+        console.warn("❌ Ô không có class custom-cell:", cell);
+        return;
+    }
+
+    // Nếu đang chọn giờ lẻ, tự động chọn cả ô giờ tiếp theo
+    const hour = parseFloat(cell.dataset.hour);
+    if (!cell.classList.contains("selected-cell")) {
+        const nextSelector = `td[data-court="${cell.dataset.court}"][data-date="${cell.dataset.date}"][data-hour="${(hour + 0.5).toFixed(1)}"]`;
+        const nextCell = document.querySelector(nextSelector);
+        if (hour % 1 === 0 && nextCell && !nextCell.classList.contains('selected-cell')) {
+            toggleCellSelection(nextCell, true);
+        }
+    }
+
+    if (isCtrlPressed) {
+        if (!cell.classList.contains('selected-cell')) {
+            cell.classList.add('selected-cell');
+            selectedCells.push(cell);
+            cell.dataset.type = selectedType;
+            if (selectedType === "pass sân") cell.style.backgroundColor = "#f87171";
+            else if (selectedType === "cố định") cell.style.backgroundColor = "#60a5fa";
+            else if (selectedType === "giờ chẵn") cell.style.backgroundColor = "#86efac";
+            else if (selectedType === "giờ lẻ") cell.style.backgroundColor = "#fde68a";
+            else cell.style.backgroundColor = "";
+        }
+    } else {
+        if (cell.classList.contains('selected-cell')) {
+            // Bỏ chọn ô
+            cell.classList.remove('selected-cell');
+            selectedCells = selectedCells.filter(c => c !== cell);
+            cell.dataset.type = ""; // Xóa type tạm thời
+            cell.style.backgroundColor = ""; // Xóa màu tạm thời
+
+            // Kiểm tra nếu ô có lịch (dataset.bookingId)
+            if (cell.dataset.bookingId) {
+                // Tìm thông tin lịch trong bookingsCache
+                const booking = bookingsCache.find(b =>
+                    b.id == cell.dataset.bookingId &&
+                    b.date === cell.dataset.date &&
+                    b.court_id == cell.dataset.court &&
+                    parseFloat(b.start_time).toFixed(1) === cell.dataset.hour
+                );
+
+                if (booking) {
+                    // Áp dụng lại màu và nội dung dựa trên thông tin lịch
+                    const isWhole = x => Math.abs(x - Math.round(x)) < 0.01;
+                    const bgColor = booking.type === "cố định" ? "bg-blue-400" :
+                        booking.type === "pass sân" ? "bg-red-300" :
+                            (isWhole(booking.start_time) && isWhole(booking.end_time) ? "bg-green-400" : "bg-yellow-400");
+                    const textColor = booking.is_paid ? "text-black" : "text-red-600";
+                    const priceStr = booking.manual_price > 0 ? booking.manual_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) :
+                        booking.price > 0 ? booking.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '';
+
+                    cell.className = `border px-4 py-3 text-center custom-cell ${bgColor} text-white`;
+                    cell.innerHTML = `<div class="${textColor} font-semibold">${booking.customer_name}${priceStr ? `<br/>${priceStr}` : ''}</div>`;
+                    cell.dataset.bookingType = booking.type;
+                    cell.dataset.isPaid = booking.is_paid;
+                    cell.dataset.customerName = booking.customer_name;
+                    cell.dataset.totalPrice = booking.manual_price > 0 ? booking.manual_price : booking.price;
+                } else {
+                    // Nếu không tìm thấy booking, đặt lại trạng thái mặc định
+                    cell.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
+                    cell.innerHTML = "";
+                    delete cell.dataset.bookingId;
+                    delete cell.dataset.bookingType;
+                    delete cell.dataset.isPaid;
+                    delete cell.dataset.customerName;
+                    delete cell.dataset.totalPrice;
                 }
             } else {
-                if (cell.classList.contains('selected-cell')) {
-                    cell.classList.remove('selected-cell');
-                    selectedCells = selectedCells.filter(c => c !== cell);
-                }
+                // Nếu ô không có lịch, đặt lại trạng thái mặc định
+                cell.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
+                cell.innerHTML = "";
             }
         }
+    }
+
+    console.log("🔍 selectedCells sau khi chọn:", selectedCells.map(c => ({
+        court: c.dataset.court,
+        date: c.dataset.date,
+        hour: c.dataset.hour,
+        type: c.dataset.type
+    })));
+}
 
         // Bỏ chọn tất cả ô
         function clearSelection() {
@@ -183,42 +274,78 @@ function submitBookingForm() {
     const paymentMethod = document.getElementById('paymentMethodSelect')?.value.trim();
     const manualPrice = parseFloat(document.getElementById('manualPriceInput')?.value.trim());
 
-    if (!name) return alert('Vui lòng nhập tên!');
-    if (selectedCells.length === 0) return alert('Bạn chưa chọn ô nào.');
+    console.log("🔍 Bắt đầu submitBookingForm", { name, phone, isPaid, paymentMethod, manualPrice });
 
-    const hasConflict = selectedCells.some(cell => cell.innerHTML.trim() !== "");
-    if (hasConflict) {
-        alert("Trong số các ô bạn chọn có ô đã được đặt. Vui lòng bỏ chọn các ô đó.");
-        return;
+    if (!name) {
+        console.log("❌ Thiếu tên khách hàng");
+        return alert('Vui lòng nhập tên!');
     }
 
-    const bookings = selectedCells.map(cell => {
-        const typeRaw = cell.dataset.type?.trim().toLowerCase();
+    if (selectedCells.length === 0) {
+        console.log("❌ selectedCells rỗng:", selectedCells);
+        return alert('Bạn chưa chọn ô nào.');
+    }
+
+    console.log("🔍 selectedCells:", selectedCells.map(c => ({
+        court: c.dataset.court,
+        date: c.dataset.date,
+        hour: c.dataset.hour,
+        type: c.dataset.type
+    })));
+
+    // Nhóm các ô theo ngày và sân
+    const groupedByDateAndCourt = {};
+    selectedCells.forEach(cell => {
+        const key = `${cell.dataset.date}_${cell.dataset.court}`;
+        if (!groupedByDateAndCourt[key]) {
+            groupedByDateAndCourt[key] = [];
+        }
+        groupedByDateAndCourt[key].push(cell);
+    });
+
+    console.log("🔍 groupedByDateAndCourt:", Object.keys(groupedByDateAndCourt).map(key => ({
+        key,
+        cells: groupedByDateAndCourt[key].map(c => ({
+            hour: c.dataset.hour,
+            type: c.dataset.type
+        }))
+    })));
+
+    const bookings = [];
+    for (const key in groupedByDateAndCourt) {
+        const cells = groupedByDateAndCourt[key].sort((a, b) => parseFloat(a.dataset.hour) - parseFloat(b.dataset.hour));
+        const court = cells[0].dataset.court;
+        const date = cells[0].dataset.date;
+        const typeRaw = cells[0].dataset.type?.trim().toLowerCase();
         let actualType = typeRaw;
         if (typeRaw === "giờ chẵn" || typeRaw === "giờ lẻ") actualType = "vãng lai";
-        if (cell.classList.contains("bg-red-300")) actualType = "pass sân";
+        if (cells.some(cell => cell.classList.contains("bg-red-300"))) actualType = "pass sân";
 
-        const colorMap = {
-            "pass sân": "bg-red-300",
-            "cố định": "bg-blue-400",
-            "vãng lai": typeRaw === "giờ chẵn" ? "bg-green-400" : "bg-yellow-400"
-        };
+        let startHour = parseFloat(cells[0].dataset.hour);
+        let endHour = parseFloat(cells[cells.length - 1].dataset.hour) + 0.5;
 
-        cell.className = `border px-4 py-3 text-center custom-cell text-white ${colorMap[actualType] || ""}`;
+               // Kiểm tra xung đột
+        const hasConflict = cells.some(cell => cell.innerHTML.trim() !== "" && !cell.classList.contains('selected-cell'));
+        if (hasConflict) {
+            console.log("❌ Có ô đã được đặt trong cells:", cells);
+            alert("Trong số các ô bạn chọn có ô đã được đặt. Vui lòng bỏ chọn các ô đó.");
+            return;
+        }
 
-        return {
-            court_id: parseInt(cell.dataset.court),
-            date: cell.dataset.date,
-            start_time: formatTime(parseFloat(cell.dataset.hour)),
-            end_time: formatTime(parseFloat(cell.dataset.hour) + 0.5),
+        bookings.push({
+            court_id: parseInt(court),
+            date: date,
+            start_time: formatTime(startHour),
+            end_time: formatTime(endHour),
             type: actualType,
             is_paid: isPaid,
             payment_method: paymentMethod || null,
             manual_price: !isNaN(manualPrice) ? manualPrice : null
-        };
-    });
+        });
+    }
 
     const payload = { name, phone, bookings };
+    console.log("📤 Payload gửi đi:", payload);
 
     $.ajax({
         url: '/AdminQuanLy/UpdateBookingsWithCustomer',
@@ -227,11 +354,23 @@ function submitBookingForm() {
         dataType: 'json',
         data: JSON.stringify(payload),
         success: function (res) {
+            console.log("✅ Kết quả từ API UpdateBookingsWithCustomer:", res);
             if (res.success) {
                 alert("✅ Cập nhật lịch thành công!");
                 const onlyChangeColor = bookings.every(b => b.type === 'pass sân');
                 clearSelection?.();
-                if (!onlyChangeColor) renderBookingTable?.();
+                if (onlyChangeColor) {
+                    bookings.forEach(b => {
+                        const selector = `td[data-court="${b.court_id}"][data-date="${b.date}"][data-hour="${parseFloat(b.start_time).toFixed(1)}"]`;
+                        const cell = document.querySelector(selector);
+                        if (cell) {
+                            cell.className = "border px-4 py-3 text-center custom-cell text-white bg-red-300";
+                            cell.innerHTML = "pass sân";
+                        }
+                    });
+                } else {
+                    renderBookingTable?.();
+                }
             } else if (res.conflict) {
                 const useOld = confirm(`${res.message}\n\nOK: ${res.options[0]}\nCancel: ${res.options[1]}`);
                 $.ajax({
@@ -241,6 +380,7 @@ function submitBookingForm() {
                     dataType: 'json',
                     data: JSON.stringify({ ...payload, name: useOld ? res.options[0] : res.options[1] }),
                     success: r2 => {
+                        console.log("✅ Kết quả từ API UpdateBookingsWithCustomer (xử lý conflict):", r2);
                         if (r2.success) {
                             alert("✅ Đã cập nhật với tên đã chọn.");
                             clearSelection?.();
@@ -252,7 +392,10 @@ function submitBookingForm() {
                 alert("❌ Lỗi khi cập nhật: " + (res.message || "Không rõ lỗi"));
             }
         },
-        error: xhr => alert("❌ Lỗi server: " + xhr.responseText)
+        error: xhr => {
+            console.error("❌ Lỗi server từ UpdateBookingsWithCustomer:", xhr.responseText);
+            alert("❌ Lỗi server: " + xhr.responseText);
+        }
     });
 }
         ////==========================================================================================================================================
@@ -301,28 +444,23 @@ function submitBookingForm() {
         }
 //================================================================================================================================================================
         // Bỏ chọn tất cả ngày
-        function toggleAllDays() {
-            const checkboxes = document.querySelectorAll('.day-checkbox');
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+function toggleAllDays() {
+    const checkboxes = document.querySelectorAll('.day-checkbox');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
 
-            checkboxes.forEach(cb => cb.checked = !allChecked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
 
-            // Cập nhật lại nội dung nút dựa vào trạng thái checkbox
-            event.target.textContent = allChecked ? 'Chọn tất cả' : 'Bỏ chọn tất cả';
-
-            applyDayFilter();
+    // Cập nhật lại nội dung nút
+    const toggleButton = document.getElementById('toggleDayFilter');
+    if (toggleButton) {
+        toggleButton.textContent = allChecked ? 'Chọn tất cả' : 'Bỏ chọn tất cả';
+    }
+    removeCellsHiddenByRowspan();
+    filterBookingTableNew();
+    removeCellsHiddenByRowspan();
 }
 //===============================================================================================================================================================================
-         function applyDayFilter() {
-                const visibleDates = Array.from(document.querySelectorAll('.day-checkbox:checked')).map(cb => cb.value);
-
-                document.querySelectorAll('#thead th[data-date]').forEach(th => {
-                    th.style.display = visibleDates.includes(th.dataset.date) ? '' : 'none';
-                });
-                document.querySelectorAll('#tbody td[data-date]').forEach(td => {
-                    td.style.display = visibleDates.includes(td.dataset.date) ? '' : 'none';
-                });
-            }
+    
 //===============================================================================================================================================================================
 function closeBookingDetail() {
     const detailDiv = document.getElementById("bookingDetailPopup");
@@ -393,7 +531,11 @@ function formatDate(dateStr) {
 //===============================================================================================================================================================================
         // tạo bảng quan trọng
         // Hàm xuất dữ liệu ra Excel
-        // lọc ngày, lọc giờ
+// lọc ngày, lọc giờ
+function roundToNearestHalf(num) {
+    return Math.round(parseFloat(num) * 2) / 2;
+}
+let lastClickedBookingInfo = null;
 function renderBookingTable() {
     const numCourts = 6;
     const startHour = 5;
@@ -401,17 +543,27 @@ function renderBookingTable() {
 
     const selectedMonth = parseInt(document.getElementById('monthSelect').value);
     const selectedYear = parseInt(document.getElementById('yearSelect').value);
+    const currentDate = new Date();
 
+    // Tạo mảng dates chứa tất cả các ngày trong tháng
     const dates = [];
     const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
     for (let i = 1; i <= daysInMonth; i++) {
         const d = new Date(selectedYear, selectedMonth, i);
-        dates.push({
-            date: formatDateToYMD(d),
-            label: d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })
-        });
+        const dateStr = formatDateToYMD(d);
+        if (!dates.some(existing => existing.date === dateStr)) {
+            dates.push({
+                date: dateStr,
+                label: d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })
+            });
+        }
     }
+    console.log("📅 Mảng dates:", dates);
 
+    // Cập nhật dropdown với tất cả các ngày
+    populateDayHourDropdowns(dates);
+    removeCellsHiddenByRowspan();
+    // Xây dựng bảng
     const thead = document.getElementById('thead');
     const tbody = document.getElementById('tbody');
     thead.innerHTML = '';
@@ -430,7 +582,6 @@ function renderBookingTable() {
 
     for (let court = 1; court <= numCourts; court++) {
         const courtClass = court % 2 === 0 ? 'court-even' : 'court-odd';
-
         for (let hour = startHour; hour < endHour; hour += 0.5) {
             const tr = document.createElement('tr');
             tr.dataset.hour = hour.toFixed(1);
@@ -457,32 +608,44 @@ function renderBookingTable() {
         }
     }
 
-    // Checkbox lọc ngày
-    const dayFilter = document.getElementById('dayFilter');
-    if (dayFilter) {
-        dayFilter.innerHTML = '';
-        dates.forEach(d => {
-            const label = document.createElement('label');
-            label.className = 'flex items-center space-x-1';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = d.date;
-            checkbox.className = 'day-checkbox';
-            checkbox.checked = true;
-            checkbox.addEventListener('change', applyDayFilter);
-
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(d.label));
-            dayFilter.appendChild(label);
-        });
-    }
-
-    // Gọi API
+    // Gọi API để lấy dữ liệu booking
     $.getJSON("/AdminQuanLy/GetBookings", {
         month: selectedMonth + 1,
         year: selectedYear
     }, function (data) {
+        console.log("📦 Dữ liệu từ API:", data);
+
+        // Lưu dữ liệu vào bookingsCache
+        bookingsCache = [];
+        const seen = new Set();
+        data.forEach(b => {
+            let bookingDate;
+            try {
+                bookingDate = new Date(b.date);
+                if (isNaN(bookingDate)) throw new Error(`Ngày không hợp lệ: ${b.date}`);
+            } catch (e) {
+                console.error(`❌ Lỗi định dạng ngày cho booking:`, b);
+                return;
+            }
+
+            if (bookingDate.getFullYear() === selectedYear && bookingDate.getMonth() === selectedMonth) {
+                const key = `${formatDateToYMD(bookingDate)}_${b.court_id}_${b.start_time}_${b.end_time}_${b.customer_id}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    bookingsCache.push({
+                        ...b,
+                        date: formatDateToYMD(bookingDate),
+                        start_time: parseFloat(b.start_time),
+                        end_time: parseFloat(b.end_time)
+                    });
+                } else {
+                    console.warn(`❌ Bỏ qua booking trùng lặp:`, b);
+                }
+            }
+        });
+        console.log("📋 Dữ liệu bookingsCache:", bookingsCache);
+
+        // Reset tất cả ô
         document.querySelectorAll('.custom-cell').forEach(cell => {
             cell.innerHTML = "";
             cell.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
@@ -490,44 +653,66 @@ function renderBookingTable() {
         });
 
         const grouped = {};
-        data.forEach(b => {
-            const key = `${b.date}_${b.court_id}`;
+        bookingsCache.forEach(b => {
+            const key = `${b.date}_${b.court_id}_${b.customer_id}`;
             if (!grouped[key]) grouped[key] = [];
             grouped[key].push(b);
         });
+        console.log("📋 Dữ liệu sau khi nhóm:", grouped);
 
         for (const key in grouped) {
-            const list = grouped[key].sort((a, b) => parseFloat(a.start_time) - parseFloat(b.start_time));
+            const list = grouped[key].sort((a, b) => a.start_time - b.start_time);
             let i = 0;
+
             while (i < list.length) {
                 const b = list[i];
+                console.log("🔍 Xử lý booking:", b);
+
                 const merged = {
                     ...b,
-                    start_time: parseFloat(b.start_time),
-                    end_time: parseFloat(b.end_time),
+                    start_time: roundToNearestHalf(b.start_time),
+                    end_time: roundToNearestHalf(b.end_time),
                     total_price: b.manual_price > 0 ? b.manual_price : b.price
                 };
-                const name = (b.customer_name || "").trim();
-                const phone = (b.customer_phone || "").trim();
 
                 let j = i + 1;
                 while (
                     j < list.length &&
-                    parseFloat(list[j].start_time) === merged.end_time &&
-                    list[j].is_paid === b.is_paid && // kiểm tra trạng thái thanh toán giống nhau
-                    ((list[j].customer_name || "").trim() === name || (list[j].customer_phone || "").trim() === phone)
+                    roundToNearestHalf(list[j].start_time) <= merged.end_time &&
+                    list[j].is_paid === b.is_paid &&
+                    list[j].customer_id === b.customer_id &&
+                    list[j].type === b.type
                 ) {
-                    merged.end_time = parseFloat(list[j].end_time);
+                    console.log("🔗 Gộp booking:", list[j]);
+                    merged.end_time = roundToNearestHalf(list[j].end_time);
                     merged.total_price += list[j].manual_price > 0 ? list[j].manual_price : list[j].price;
                     j++;
                 }
+
+                console.log("🔗 Kết quả gộp:", {
+                    court_id: b.court_id,
+                    date: b.date,
+                    start_time: merged.start_time,
+                    end_time: merged.end_time,
+                    customer_id: b.customer_id,
+                    total_price: merged.total_price
+                });
+
                 i = j;
 
-                const selector = `td[data-court="${b.court_id}"][data-hour="${merged.start_time.toFixed(1)}"][data-date="${b.date}"]`;
+                const hourStr = parseFloat(merged.start_time).toFixed(1); // ép chặt định dạng
+                const selector = `td[data-court="${b.court_id}"][data-hour="${hourStr}"][data-date="${b.date}"]`;
                 const cell = document.querySelector(selector);
-                if (!cell) continue;
+                cell?.dataset && (cell.dataset.hour = merged.start_time.toFixed(1));
 
-                const rowspan = (merged.end_time - merged.start_time) * 2;
+                if (!cell) {
+                    console.warn(`❌ Không tìm thấy ô cho booking: court=${b.court_id}, hour=${merged.start_time.toFixed(1)}, date=${b.date}`);
+                    continue;
+                }
+
+                const rowspan = Math.round((merged.end_time - merged.start_time) / 0.5);
+                console.log("📏 Rowspan:", rowspan, "Start:", merged.start_time, "End:", merged.end_time);
+
                 const isWhole = x => Math.abs(x - Math.round(x)) < 0.01;
                 const bgColor = {
                     "cố định": "bg-blue-400",
@@ -539,57 +724,71 @@ function renderBookingTable() {
                 const priceStr = merged.total_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
                 cell.rowSpan = rowspan;
+                cell.classList.remove("bg-green-400", "bg-blue-400", "bg-red-300", "bg-yellow-400");
                 cell.classList.add(bgColor, "text-white");
                 cell.classList.remove("hover:bg-green-100");
-                cell.innerHTML = `<div class="${textColor} font-semibold">${name}${merged.total_price > 0 ? `<br/>${priceStr}` : ''}</div>`;
+                cell.innerHTML = `<div class="${textColor} font-semibold">${b.customer_name}${merged.total_price > 0 ? `<br/>${priceStr}` : ''}</div>`;
                 cell.dataset.bookingId = b.id;
 
-                // Gắn sự kiện click
-                cell.addEventListener('click', () => {
-                    document.getElementById("nameInput").value = name;
-                    document.getElementById("phoneInput").value = phone;
-
-                    $.ajax({
-                        url: "/AdminQuanLy/XemChiTietBooking",
-                        data: {
-                            date: b.date,
-                            court_id: b.court_id,
-                            hour: merged.start_time
-                        },
-                        dataType: "html",
-                        success: function (html) {
-                            const detailDiv = document.getElementById("bookingDetailPopup");
-                            if (detailDiv) {
-                                detailDiv.innerHTML = html;
-                                detailDiv.style.display = "block";
-                            }
-                        },
-                        error: function () {
-                            alert("Không tải được chi tiết đặt sân.");
-                        }
-                    });
-                });
-
-                // Xóa các ô bị gộp
+                // Xóa các ô bị gộp do rowspan
                 for (let h = merged.start_time + 0.5; h < merged.end_time; h += 0.5) {
-                    const removeSelector = `td[data-court="${b.court_id}"][data-hour="${h.toFixed(1)}"][data-date="${b.date}"]`;
-                    document.querySelector(removeSelector)?.remove();
+                    const hRounded = h.toFixed(1);
+                    const row = document.querySelector(`tr[data-hour="${hRounded}"]`);
+                    if (row) {
+                        const tdToHide = Array.from(row.children).find(td =>
+                            td.dataset?.court === String(b.court_id) &&
+                            td.dataset?.date === b.date
+                        );
+                        if (tdToHide) {
+                            tdToHide.remove();
+                            // Nếu dòng chỉ còn 2 ô (Sân + Giờ) thì xóa luôn dòng
+                            const remainingCells = row.querySelectorAll("td").length;
+                            if (remainingCells <= 2) row.remove();
+                        }
+                    }
                 }
             }
         }
 
-        document.addEventListener("click", function (e) {
-            const popup = document.getElementById("bookingDetailPopup");
-            if (popup && !popup.contains(e.target) && !e.target.closest('.custom-cell')) {
-                closeBookingDetail();
-            }
-        });
+      
 
+        document.querySelectorAll('.custom-cell[data-booking-id]').forEach(cell => {
+            cell.addEventListener('click', () => {
+                const courtId = cell.dataset.court;
+                const date = cell.dataset.date;
+                const hour = cell.dataset.hour;
+
+                if (!courtId || !date || !hour) return;
+
+                lastClickedBookingInfo = { date, courtId, hour };
+
+                const btn = document.getElementById("btnShowBookingDetail");
+                if (btn) btn.classList.remove("hidden"); // Hiện nút khi chọn ô
+            });
+        });
+        filterBookingTableNew();                
+        setTimeout(removeCellsHiddenByRowspan, 10); 
         localStorage.removeItem("pass_san_custom");
+    }).fail(function (xhr) {
+        console.error("❌ Lỗi khi gọi API GetBookings:", xhr.responseText);
+        alert("❌ Lỗi khi tải dữ liệu lịch: " + xhr.responseText);
+    });
+}
+function showBookingDetail() {
+    if (!lastClickedBookingInfo) {
+        alert("Vui lòng chọn ô lịch trước.");
+        return;
+    }
+
+    const { date, courtId, hour } = lastClickedBookingInfo;
+
+    $.get(`/AdminQuanLy/XemChiTietBooking?date=${date}&court_id=${courtId}&hour=${hour}`, function (html) {
+        $("#bookingDetailPopup").html(html).fadeIn();
     });
 }
 
-        //=========================================================================================================================================================================
+//=========================================================================================================================================================================
+//Cập nhật giá theo khung giờ đã chọn
 function updateManualPrice() {
     const manualPrice = parseFloat(document.getElementById('manualPriceInput')?.value.trim());
 
@@ -636,76 +835,507 @@ function updateManualPrice() {
 }
 
 
-//=========================================================================================================================
+//================================================================================================================================================================================================
+function populateDayHourDropdowns(dates) {
+    const dayDiv = $('#dayFilterDropdown').empty();
+    const hourDiv = $('#hourFilterDropdown').empty();
+    const currentDate = new Date();
+    console.log("📅 Dropdown dates:", dates);
+
+    dayDiv.append(`
+        <div class="mb-2 font-semibold">
+            <label><input type="checkbox" id="checkAllDays" class="mr-2" checked /> Chọn tất cả ngày</label>
+        </div>
+    `);
+    hourDiv.append(`
+        <div class="mb-2 font-semibold">
+            <label><input type="checkbox" id="checkAllHours" class="mr-2" checked /> Chọn tất cả giờ</label>
+        </div>
+    `);
+
+    // Tạo checkbox cho các ngày
+    dates.forEach(d => {
+        const label = d.label;
+        const value = d.date;
+        const dateObj = new Date(value);
+        const isFutureOrToday = dateObj >= currentDate.setHours(0, 0, 0, 0);
+        const checkbox = $(`<div><label><input type="checkbox" class="day-checkbox mr-2" value="${value}" ${isFutureOrToday ? 'checked' : ''} /> ${label}</label></div>`);
+        dayDiv.append(checkbox);
+    });
+
+    // Tạo checkbox cho các giờ
+    for (let h = 5; h < 24; h += 1) {
+        const start = formatTime(h);
+        const end = formatTime(h + 1);
+        const value1 = h.toFixed(1);     // e.g., 6.0
+        const value2 = (h + 0.5).toFixed(1); // e.g., 6.5
+
+        const checkbox = $(`
+        <div>
+            <label>
+                <input type="checkbox" class="hour-checkbox mr-2" data-combo="${value1},${value2}" checked />
+                ${start} - ${end}
+            </label>
+        </div>
+    `);
+        hourDiv.append(checkbox);
+    }
+
+    $('#checkAllDays').on('change', function () {
+        const checked = this.checked;
+        $('.day-checkbox').prop('checked', checked);
+      
+        filterBookingTableNew();
+        removeCellsHiddenByRowspan();
+    });
+    $('#checkAllHours').on('change', function () {
+        const checked = this.checked;
+        $('.hour-checkbox').prop('checked', checked);
+       
+        filterBookingTableNew();
+        removeCellsHiddenByRowspan();
+    });
+
+    $('.day-checkbox, .hour-checkbox').on('change', function () {
+        filterBookingTableNew();
+        setTimeout(removeCellsHiddenByRowspan, 10); // thêm delay
+    });
+
+
+    filterBookingTableNew();
+    removeCellsHiddenByRowspan();
+}
+//============================================================================================================================================================================================================
+//xóa các ô bị đẩy
+function removeCellsHiddenByRowspan() {
+    document.querySelectorAll('.custom-cell[rowspan]').forEach(cell => {
+        const startHour = parseFloat(cell.dataset.hour);
+        const rowspan = parseInt(cell.getAttribute("rowspan"));
+        const endHour = startHour + rowspan * 0.5;
+        const court = cell.dataset.court;
+        const date = cell.dataset.date;
+
+        console.log(`🔍 Xử lý ô rowspan: court=${court}, date=${date}, startHour=${startHour}, endHour=${endHour}, rowspan=${rowspan}`);
+
+        for (let h = startHour + 0.5; h < endHour; h += 0.5) {
+            const hRounded = h.toFixed(1);
+            const rows = document.querySelectorAll(`tr[data-hour="${hRounded}"]`); // Tìm tất cả các hàng khớp
+            rows.forEach(row => {
+                const tdToHide = Array.from(row.children).find(td =>
+                    td.dataset?.court === court &&
+                    td.dataset?.date === date &&
+                    td !== cell &&
+                    !td.hasAttribute('rowspan')
+                );
+                if (tdToHide) {
+                    console.log(`🗑️ Xóa ô thừa: court=${tdToHide.dataset.court}, hour=${tdToHide.dataset.hour}, date=${tdToHide.dataset.date}`);
+                    tdToHide.remove();
+                } else {
+                    console.log(`⚠️ Không tìm thấy ô thừa để xóa: court=${court}, hour=${hRounded}, date=${date}`);
+                }
+                // Kiểm tra và xóa hàng nếu chỉ còn 2 ô (Sân + Giờ)
+                const remainingCells = row.querySelectorAll("td").length;
+                if (remainingCells <= 2) {
+                    console.log(`🗑️ Xóa hàng trống: hour=${hRounded}`);
+                    row.remove();
+                }
+            });
+        }
+    });
+}
+function filterBookingTableNew() {
+    const selectedDays = $('.day-checkbox:checked').map((_, el) => el.value).get();
+    let selectedHours = [];
+    $('.hour-checkbox:checked').each((_, el) => {
+        const combo = el.dataset.combo;
+        if (combo) {
+            selectedHours.push(...combo.split(',').map(parseFloat));
+        } else if (el.value) {
+            selectedHours.push(parseFloat(el.value));
+        }
+    });
+
+
+    console.log("🔍 selectedDays:", selectedDays);
+    console.log("🔍 selectedHours:", selectedHours);
+
+    // Lọc các cột theo ngày
+    document.querySelectorAll('#thead th[data-date]').forEach(th => {
+        th.style.display = selectedDays.includes(th.dataset.date) ? '' : 'none';
+    });
+
+    // Reset bảng về trạng thái ban đầu
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    const numCourts = 6;
+    const startHour = 5;
+    const endHour = 24;
+    const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+    const selectedYear = parseInt(document.getElementById('yearSelect').value);
+    const dates = [];
+    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+
+    // Chỉ thêm các ngày được chọn vào mảng dates
+    for (let i = 1; i <= daysInMonth; i++) {
+        const d = new Date(selectedYear, selectedMonth, i);
+        const dateStr = formatDateToYMD(d);
+        if (selectedDays.includes(dateStr)) {
+            dates.push({ date: dateStr });
+        }
+    }
+    console.log("📅 dates:", dates);
+
+    // Tạo lại các hàng và ô
+    for (let court = 1; court <= numCourts; court++) {
+        for (let hour = startHour; hour < endHour; hour += 0.5) {
+            const hRounded = hour.toFixed(1);
+            if (!selectedHours.includes(parseFloat(hRounded))) continue; // Chỉ tạo hàng nếu giờ được chọn
+            const row = document.createElement('tr');
+            row.dataset.hour = hRounded;
+            const startLabel = Math.floor(hour) + (hour % 1 === 0.5 ? 'h30' : 'h');
+            const endLabel = Math.floor(hour + 0.5) + ((hour + 0.5) % 1 === 0.5 ? 'h30' : 'h');
+            row.innerHTML = `
+                <td class="border px-2 py-1 font-bold text-blue-600 w-8 ${court % 2 === 0 ? 'court-even' : 'court-odd'}">${court}</td>
+                <td class="border px-2 py-1 text-gray-700">${startLabel} - ${endLabel}</td>
+            `;
+            for (const d of dates) {
+                const td = document.createElement('td');
+                td.className = 'border px-4 py-3 text-center custom-cell hover:bg-green-100 cursor-pointer select-none';
+                td.dataset.court = court;
+                td.dataset.hour = hRounded;
+                td.dataset.date = d.date;
+                row.appendChild(td);
+            }
+            tbody.appendChild(row);
+        }
+    }
+
+    // Áp dụng dữ liệu lịch từ bookingsCache
+    const grouped = {};
+    bookingsCache.forEach(b => {
+        const key = `${b.date}_${b.court_id}_${b.customer_id}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(b);
+    });
+
+    for (const key in grouped) {
+        const list = grouped[key].sort((a, b) => a.start_time - b.start_time);
+        let i = 0;
+
+        while (i < list.length) {
+            const b = list[i];
+            const merged = {
+                ...b,
+                start_time: roundToNearestHalf(b.start_time),
+                end_time: roundToNearestHalf(b.end_time),
+                total_price: b.manual_price > 0 ? b.manual_price : b.price
+            };
+
+            let j = i + 1;
+            while (
+                j < list.length &&
+                roundToNearestHalf(list[j].start_time) <= merged.end_time &&
+                list[j].is_paid === b.is_paid &&
+                list[j].customer_id === b.customer_id &&
+                list[j].type === b.type
+            ) {
+                merged.end_time = roundToNearestHalf(list[j].end_time);
+                merged.total_price += list[j].manual_price > 0 ? list[j].manual_price : list[j].price;
+                j++;
+            }
+
+            i = j;
+
+            // Chỉ hiển thị nếu ngày thuộc selectedDays
+            if (!selectedDays.includes(b.date)) {
+                console.log(`⏩ Bỏ qua booking vì ngày không được chọn: ${b.date}`);
+                continue;
+            }
+
+            // Tìm giờ hiển thị đầu tiên trong selectedHours
+            let startDisplayHour = roundToNearestHalf(merged.start_time);
+            if (!selectedHours.includes(startDisplayHour)) {
+                // Nếu start_hour không có trong filter → tìm giờ tiếp theo
+                for (let h = merged.start_time + 0.5; h < merged.end_time; h += 0.5) {
+                    const hRounded = roundToNearestHalf(h);
+                    if (selectedHours.includes(hRounded)) {
+                        startDisplayHour = hRounded;
+                        break;
+                    }
+                }
+            }
+
+            if (!startDisplayHour) {
+                // 🔥 Nếu không còn khung giờ phù hợp → xóa ô còn tồn tại do render trước
+                const selector = `td[data-court="${b.court_id}"][data-date="${b.date}"]`;
+                const oldCell = document.querySelector(selector);
+                if (oldCell) oldCell.remove();
+                continue;
+            }
+
+            // Tính rowspan dựa trên các giờ được chọn
+            let visibleRowspan = 0;
+            const visibleHours = [];
+            for (let h = merged.start_time; h < merged.end_time; h += 0.5) {
+                const hRounded = roundToNearestHalf(h);
+                if (selectedHours.includes(hRounded)) {
+                    visibleRowspan++;
+                    visibleHours.push(hRounded);
+                }
+            }
+            if (visibleRowspan === 0) {
+                console.log(`⏩ Bỏ qua booking vì không có giờ nào được chọn: ${b.date}, ${merged.start_time}-${merged.end_time}`);
+                continue;
+            }
+
+            const isWhole = x => Math.abs(x - Math.round(x)) < 0.01;
+            const bgColor = {
+                "cố định": "bg-blue-400",
+                "pass sân": "bg-red-300",
+                "vãng lai": isWhole(merged.start_time) && isWhole(merged.end_time) ? "bg-green-400" : "bg-yellow-400"
+            }[b.type] || "bg-yellow-400";
+            const textColor = b.is_paid ? "text-black" : "text-red-600";
+            const priceStr = merged.total_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+            const selector = `td[data-court="${b.court_id}"][data-hour="${startDisplayHour.toFixed(1)}"][data-date="${b.date}"]`;
+            const cell = document.querySelector(selector);
+            cell.dataset.hour = startDisplayHour.toFixed(1); // BỔ SUNG DÒNG NÀY
+
+            if (!cell) {
+                console.warn(`❌ Không tìm thấy ô cho booking: court=${b.court_id}, hour=${startDisplayHour.toFixed(1)}, date=${b.date}`);
+                continue;
+            }
+
+            cell.rowSpan = visibleRowspan;
+            cell.classList.remove("bg-green-400", "bg-blue-400", "bg-red-300", "bg-yellow-400");
+            cell.classList.add(bgColor, "text-white");
+            cell.classList.remove("hover:bg-green-100");
+            cell.innerHTML = `<div class="${textColor} font-semibold">${b.customer_name}${merged.total_price > 0 ? `<br/>${priceStr}` : ''}</div>`;
+            cell.dataset.bookingId = b.id;
+            cell.dataset.customerName = b.customer_name;
+            cell.dataset.totalPrice = merged.total_price;
+            cell.dataset.isPaid = b.is_paid;
+            cell.dataset.bookingType = b.type;
+            cell.dataset.startHour = merged.start_time.toFixed(1);
+            cell.dataset.endHour = merged.end_time.toFixed(1);
+
+            // Xóa các ô bị gộp do rowspan
+            for (const h of visibleHours.slice(1)) {
+                const row = document.querySelector(`tr[data-hour="${h.toFixed(1)}"]`);
+                if (row) {
+                    const tdToHide = Array.from(row.children).find(td =>
+                        td.dataset?.court === String(b.court_id) &&
+                        td.dataset?.date === b.date
+                    );
+                    if (tdToHide) {
+                        tdToHide.remove();
+                        const remainingCells = row.querySelectorAll("td").length;
+                        if (remainingCells <= 2) row.remove();
+                    }
+                }
+            }
+        }
+    }
+
+    // Ẩn hàng nếu không còn ô dữ liệu hiển thị
+    document.querySelectorAll('#tbody tr').forEach(row => {
+        const visibleCells = Array.from(row.querySelectorAll('td')).filter(td => td.style.display !== 'none');
+        if (visibleCells.length <= 2) {
+            row.style.display = 'none';
+        }
+    });
+
+    // Gắn lại sự kiện click cho các ô có booking
+    document.querySelectorAll('.custom-cell[data-booking-id]').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const courtId = cell.dataset.court;
+            const date = cell.dataset.date;
+            const hour = cell.dataset.hour;
+
+            if (!courtId || !date || !hour) return;
+            lastClickedBookingInfo = { date, courtId, hour };
+            document.getElementById("btnShowBookingDetail")?.classList.remove("hidden");
+
+        });
+    });
+
+    console.log("✅ filterBookingTableNew hoàn tất");
+}
+function filterBookingTable() {
+    const selectedDays = $('.day-checkbox:checked').map((_, el) => el.value).get();
+    const selectedHours = $('.hour-checkbox:checked').map((_, el) => parseFloat(el.value)).get();
+
+    // Lọc các cột theo ngày
+    document.querySelectorAll('#thead th[data-date]').forEach(th => {
+        th.style.display = selectedDays.includes(th.dataset.date) ? '' : 'none';
+    });
+    document.querySelectorAll('#tbody td[data-date]').forEach(td => {
+        td.style.display = selectedDays.includes(td.dataset.date) ? '' : 'none';
+    });
+
+    // Lọc từng hàng theo giờ
+    document.querySelectorAll('#tbody tr').forEach(row => {
+        const rowHour = parseFloat(row.dataset.hour);
+        const matchHour = selectedHours.includes(rowHour);
+        row.style.display = matchHour ? '' : 'none';
+    });
+
+    // Xử lý các ô có rowspan
+    document.querySelectorAll('.custom-cell[rowspan]').forEach(cell => {
+        const startHour = parseFloat(cell.dataset.hour);
+        const rowspan = parseInt(cell.getAttribute("rowspan"));
+        const endHour = startHour + rowspan * 0.5;
+        const court = cell.dataset.court;
+        const date = cell.dataset.date;
+
+        // Lấy thông tin từ ô có rowspan
+        const bookingId = cell.dataset.bookingId;
+        const customerName = cell.querySelector('div')?.innerText.split('<br>')[0] || '';
+        const price = cell.dataset.totalPrice || 0;
+        const isPaid = cell.dataset.isPaid || cell.querySelector('div')?.classList.contains('text-black');
+        const bookingType = cell.dataset.bookingType || 'vãng lai';
+        const bgColor = {
+            "cố định": "bg-blue-400",
+            "pass sân": "bg-red-300",
+            "vãng lai": parseFloat(cell.dataset.hour) % 1 === 0 ? "bg-green-400" : "bg-yellow-400"
+        }[bookingType] || "bg-yellow-400";
+        const textColor = isPaid ? "text-black" : "text-red-600";
+        const priceStr = parseFloat(price) > 0 ? parseFloat(price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '';
+
+        // Chỉ hiển thị ô nếu giờ bắt đầu nằm trong selectedHours
+        const isVisible = selectedHours.includes(startHour);
+        cell.style.display = isVisible ? '' : 'none';
+
+        // Xử lý các ô bị gộp bởi rowspan
+        for (let h = startHour + 0.5; h < endHour; h += 0.5) {
+            const hRounded = h.toFixed(1);
+            const row = document.querySelector(`tr[data-hour="${hRounded}"]`);
+            if (row) {
+                const tdToShow = Array.from(row.children).find(td =>
+                    td.dataset?.court === court &&
+                    td.dataset?.date === date
+                );
+                if (tdToShow) {
+                    if (selectedHours.includes(parseFloat(hRounded))) {
+                        // Hiển thị ô và khôi phục thông tin lịch
+                        tdToShow.style.display = '';
+                        tdToShow.className = `border px-4 py-3 text-center custom-cell ${bgColor} text-white`;
+                        tdToShow.innerHTML = `<div class="${textColor} font-semibold">${customerName}${priceStr ? `<br/>${priceStr}` : ''}</div>`;
+                        tdToShow.dataset.bookingId = bookingId;
+                        tdToShow.dataset.customerName = customerName;
+                        tdToShow.dataset.totalPrice = price;
+                        tdToShow.dataset.isPaid = isPaid;
+                        tdToShow.dataset.bookingType = bookingType;
+                    } else {
+                        // Ẩn ô nếu giờ không được chọn
+                        tdToShow.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Ẩn hàng nếu không còn ô dữ liệu hiển thị
+        document.querySelectorAll('#tbody tr').forEach(row => {
+            const visibleCells = Array.from(row.querySelectorAll('td')).filter(td => td.style.display !== 'none');
+            if (visibleCells.length <= 2) {
+                row.style.display = 'none';
+            }
+        });
+    });
+}
+document.addEventListener("click", function (e) {
+    console.log("Click event triggered on:", e.target);
+    const dayFilterDropdown = document.getElementById("dayFilterDropdown");
+    const hourFilterDropdown = document.getElementById("hourFilterDropdown");
+    const platformDropdown = document.getElementById("platformDropdown");
+
+    console.log("dayFilterDropdown exists:", !!dayFilterDropdown, "is hidden:", dayFilterDropdown?.classList.contains("hidden"));
+    console.log("hourFilterDropdown exists:", !!hourFilterDropdown, "is hidden:", hourFilterDropdown?.classList.contains("hidden"));
+    console.log("platformDropdown exists:", !!platformDropdown, "is hidden:", platformDropdown?.classList.contains("hidden"));
+
+    const isClickInsideDay = e.target.closest("#dayFilterDropdown") || e.target.closest("#toggleDayFilter");
+    const isClickInsideHour = e.target.closest("#hourFilterDropdown") || e.target.closest("#toggleHourFilter");
+    const isClickInsidePlatform = e.target.closest("#platformDropdown") || e.target.closest("#nameInput");
+
+    console.log("isClickInsideDay:", !!isClickInsideDay);
+    console.log("isClickInsideHour:", !!isClickInsideHour);
+    console.log("isClickInsidePlatform:", !!isClickInsidePlatform);
+
+    if (!isClickInsideDay && dayFilterDropdown && !dayFilterDropdown.classList.contains("hidden")) {
+        console.log("Hiding dayFilterDropdown");
+        dayFilterDropdown.classList.add("hidden");
+    }
+
+    if (!isClickInsideHour && hourFilterDropdown && !hourFilterDropdown.classList.contains("hidden")) {
+        console.log("Hiding hourFilterDropdown");
+        hourFilterDropdown.classList.add("hidden");
+    }
+
+    if (!isClickInsidePlatform && platformDropdown && !platformDropdown.classList.contains("hidden")) {
+        console.log("Hiding platformDropdown");
+        platformDropdown.classList.add("hidden");
+    }
+});
 
         //=========================================================================================================================================================================
         // Lọc giờ
         //=========================================================================================================================================================================
+window.onload = () => {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const currentDate = new Date();
 
-        function createHourCheckboxFilter() {
-            const hourFilter = document.getElementById('hourFilter');
-            hourFilter.innerHTML = '';
+    for (let m = 0; m < 12; m++) {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = new Date(0, m).toLocaleString('vi-VN', { month: 'long' });
+        if (m === currentDate.getMonth()) opt.selected = true;
+        monthSelect.appendChild(opt);
+    }
 
-            for (let h = 5; h < 24; h++) {
-                const label = document.createElement('label');
-                label.className = 'flex items-center space-x-1';
+    for (let y = currentDate.getFullYear() - 1; y <= currentDate.getFullYear() + 1; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === currentDate.getFullYear()) opt.selected = true;
+        yearSelect.appendChild(opt);
+    }
 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = h.toFixed(1);
-                checkbox.className = 'hour-checkbox';
-                checkbox.addEventListener('change', filterBySelectedHours);
+    document.getElementById('btnCapNhatGia').addEventListener('click', updateManualPrice);
 
-                const hourLabel = `${h}h - ${h + 1}h`;
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(hourLabel));
+    // Gắn sự kiện click cho toggleDayFilter
+    $('#toggleDayFilter').off('click').click(function (e) {
+        e.stopPropagation();
+        $('#dayFilterDropdown').toggleClass('hidden');
+    });
 
-                hourFilter.appendChild(label);
-            }
-        }
+    // Gắn sự kiện click cho toggleHourFilter
+    $('#toggleHourFilter').off('click').click(function (e) {
+        e.stopPropagation();
+        $('#hourFilterDropdown').toggleClass('hidden');
+    });
 
-        function filterBySelectedHours() {
-            const selectedHours = Array.from(document.querySelectorAll('.hour-checkbox:checked'))
-                .map(cb => cb.value); // ['5.0', '6.0', ...]
+    // Gắn sự kiện click cho platformDropdown và nameInput
+    $('#platformDropdown').off('click').click(function (e) {
+        e.stopPropagation();
+    });
 
-            document.querySelectorAll('#tbody tr').forEach(row => {
-                const rowHour = row.dataset.hour;
-                row.style.display = selectedHours.length === 0 || selectedHours.includes(rowHour) ? '' : 'none';
-            });
-        }
+    $('#nameInput').off('click').click(function (e) {
+        e.stopPropagation();
+        $('#platformDropdown').toggleClass('hidden');
+    });
 
-        // Gọi lại sau khi render bảng xong
-        const oldRender = renderBookingTable;
-        renderBookingTable = function () {
-            oldRender();
-            createHourCheckboxFilter();  // Tạo lại checkbox mỗi lần render
-            filterBySelectedHours();     // Áp dụng lọc sau khi render
-        };
+    // Gắn sự kiện change cho checkbox
+    $(document).off('change', '.day-checkbox, .hour-checkbox').on('change', '.day-checkbox, .hour-checkbox', () => {
+        filterBookingTableNew();
+        setTimeout(removeCellsHiddenByRowspan, 10);
+    });
 
-        // Gọi lần đầu
-        window.onload = () => {
-            const monthSelect = document.getElementById('monthSelect');
-            const yearSelect = document.getElementById('yearSelect');
-            const currentDate = new Date();
-
-            for (let m = 0; m < 12; m++) {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = new Date(0, m).toLocaleString('vi-VN', { month: 'long' });
-                if (m === currentDate.getMonth()) opt.selected = true;
-                monthSelect.appendChild(opt);
-            }
-
-            for (let y = currentDate.getFullYear() - 1; y <= currentDate.getFullYear() + 1; y++) {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = y;
-                if (y === currentDate.getFullYear()) opt.selected = true;
-                yearSelect.appendChild(opt);
-            }
-            document.getElementById('btnCapNhatGia').addEventListener('click', updateManualPrice);
-            renderBookingTable();
-        };
+    renderBookingTable();
+    checkBookingChanges();
+    setInterval(checkBookingChanges, 10000);
+};
 
         function clearSelection() {
             console.log("Bỏ chọn", selectedCells);
@@ -716,21 +1346,70 @@ function updateManualPrice() {
             });
             selectedCells = [];
         }
+
  ////========================================================================================================================
 
-        function exportToExcel() {
-            const table = document.getElementById("bookingTable");
-            const wb = XLSX.utils.book_new();
-            const ws_data = [];
-            const merges = [];
+function exportToExcel() {
+    const table = document.getElementById("bookingTable");
+    const wb = { SheetNames: [], Sheets: {} };
+    const ws_data = [];
+    const merges = [];
 
-            // Header
-            const headerRow = Array.from(table.querySelectorAll("thead th")).map(th => ({
-                v: th.innerText.trim(),
+    // Header
+    const headerRow = Array.from(table.querySelectorAll("thead th")).map(th => ({
+        v: th.innerText.trim(),
+        s: {
+            font: { bold: true, sz: 12 },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+            fill: { fgColor: { rgb: "D9E1F2" } },
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        }
+    }));
+    ws_data.push(headerRow);
+
+    const rows = table.querySelectorAll("tbody tr");
+    let rowOffset = 1;
+
+    for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+        const r = rows[rIdx];
+        const cells = r.querySelectorAll("td");
+        const row = [];
+
+        for (let cIdx = 0; cIdx < cells.length; cIdx++) {
+            const c = cells[cIdx];
+            let content = "";
+            let fontColor = "000000";
+            let bg = "FFFFFF";
+
+            if (c.querySelector("div")) {
+                const div = c.querySelector("div");
+                content = div.innerText.replace(/\n/g, " - ");
+                if (div.classList.contains("text-red-600")) fontColor = "FF0000";
+                else if (div.classList.contains("text-black")) fontColor = "000000";
+            } else {
+                content = c.innerText.trim();
+            }
+
+            if (c.classList.contains("bg-green-400")) bg = "92D050";
+            else if (c.classList.contains("bg-yellow-400")) bg = "FFFF00";
+            else if (c.classList.contains("bg-red-300")) bg = "FF9999";
+            else if (c.classList.contains("bg-blue-400")) bg = "00B0F0";
+            else if (cIdx === 0 || cIdx === 1) {
+                const courtNum = parseInt(cells[0]?.innerText.trim() || "0");
+                bg = courtNum % 2 === 0 ? "E0F7FA" : "F9F9F9";
+            }
+
+            const cellObj = {
+                v: content,
                 s: {
-                    font: { bold: true, sz: 12 },
+                    fill: { fgColor: { rgb: bg } },
+                    font: { name: "Arial", sz: 11, color: { rgb: fontColor } },
                     alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                    fill: { fgColor: { rgb: "D9E1F2" } },
                     border: {
                         top: { style: "thin", color: { rgb: "000000" } },
                         bottom: { style: "thin", color: { rgb: "000000" } },
@@ -738,79 +1417,42 @@ function updateManualPrice() {
                         right: { style: "thin", color: { rgb: "000000" } }
                     }
                 }
-            }));
-            ws_data.push(headerRow);
+            };
 
-            const rows = table.querySelectorAll("tbody tr");
-            let rowOffset = 1; // Bắt đầu từ dòng 1 do dòng 0 là header
-
-            for (let rIdx = 0; rIdx < rows.length; rIdx++) {
-                const r = rows[rIdx];
-                const cells = r.querySelectorAll("td");
-                const row = [];
-
-                for (let cIdx = 0; cIdx < cells.length; cIdx++) {
-                    const c = cells[cIdx];
-
-                    let content = "";
-                    let fontColor = "000000";
-                    let bg = "FFFFFF";
-
-                    if (c.querySelector("div")) {
-                        const div = c.querySelector("div");
-                        content = div.innerText.replace(/\n/g, " - ");
-                        if (div.classList.contains("text-red-600")) fontColor = "FF0000";
-                        else if (div.classList.contains("text-black")) fontColor = "000000";
-                    } else {
-                        content = c.innerText.trim();
-                    }
-
-                    if (c.classList.contains("bg-green-400")) bg = "92D050";
-                    else if (c.classList.contains("bg-yellow-400")) bg = "FFFF00";
-                    else if (c.classList.contains("bg-red-300")) bg = "FF9999";
-                    else if (c.classList.contains("bg-blue-400")) bg = "00B0F0";
-                    else if (cIdx === 0 || cIdx === 1) {
-                        const courtNum = parseInt(cells[0]?.innerText.trim() || "0");
-                        bg = courtNum % 2 === 0 ? "E0F7FA" : "F9F9F9";
-                    }
-
-                    const cellObj = {
-                        v: content,
-                        s: {
-                            fill: { fgColor: { rgb: bg } },
-                            font: { name: "Arial", sz: 11, color: { rgb: fontColor } },
-                            alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                            border: {
-                                top: { style: "thin", color: { rgb: "000000" } },
-                                bottom: { style: "thin", color: { rgb: "000000" } },
-                                left: { style: "thin", color: { rgb: "000000" } },
-                                right: { style: "thin", color: { rgb: "000000" } }
-                            }
-                        }
-                    };
-
-                    // Nếu ô có rowspan > 1 thì thêm merge
-                    const rs = c.rowSpan || 1;
-                    if (rs > 1) {
-                        merges.push({
-                            s: { r: rowOffset, c: cIdx },
-                            e: { r: rowOffset + rs - 1, c: cIdx }
-                        });
-                    }
-
-                    row.push(cellObj);
-                }
-
-                ws_data.push(row);
-                rowOffset++;
+            const rs = c.rowSpan || 1;
+            if (rs > 1) {
+                merges.push({ s: { r: rowOffset, c: cIdx }, e: { r: rowOffset + rs - 1, c: cIdx } });
             }
 
-            const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            ws['!cols'] = new Array(ws_data[0].length).fill({ wch: 20 });
-            ws['!rows'] = ws_data.map(() => ({ hpt: 24 }));
-            ws['!merges'] = merges;
-
-            XLSX.utils.book_append_sheet(wb, ws, "LichSan");
-            XLSX.writeFile(wb, "LichSan.xlsx");
+            row.push(cellObj);
         }
- 
+
+        ws_data.push(row);
+        rowOffset++;
+    }
+
+    const ws = {};
+    for (let R = 0; R < ws_data.length; ++R) {
+        for (let C = 0; C < ws_data[R].length; ++C) {
+            const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+            ws[cell_address] = ws_data[R][C];
+        }
+    }
+
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: ws_data.length - 1, c: ws_data[0].length - 1 } });
+    ws['!cols'] = new Array(ws_data[0].length).fill({ wch: 20 });
+    ws['!rows'] = ws_data.map(() => ({ hpt: 24 }));
+    ws['!merges'] = merges;
+
+    wb.SheetNames.push("LichSan");
+    wb.Sheets["LichSan"] = ws;
+
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+    function s2ab(s) {
+        const buf = new ArrayBuffer(s.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    }
+    saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "LichSan.xlsx");
+}

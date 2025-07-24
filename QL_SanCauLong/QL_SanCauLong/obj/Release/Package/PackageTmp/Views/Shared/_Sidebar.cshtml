@@ -1,28 +1,78 @@
 ﻿@{
     string currentAction = ViewContext.RouteData.Values["action"].ToString();
     string currentController = ViewContext.RouteData.Values["controller"].ToString();
+    var userId = Session["UserId"]?.ToString();
 
-    Func<string, string, string> activeClass = (string action, string controller) =>
-        currentAction == action && currentController == controller ? "bg-blue-700" : "";
+    Func<string, string, string> activeClass = (string action, string controllerName) =>
+        currentAction == action && currentController == controllerName ? "bg-blue-700" : "";
+
+    // Danh sách các controller/action bị giới hạn bởi [AdminOnly]
+    var adminOnlyRoutes = new List<string>
+{
+        "AdminOnly:CreateAdmin",
+        "QuanLyKhoHang:Index"
+    };
+
+    // Hàm kiểm tra xem có cần ẩn menu không
+    Func<string, string, bool> shouldHideSidebarFor = (controller, action) =>
+    {
+        return adminOnlyRoutes.Contains($"{controller}:{action}") && userId != "3";
+    };
 }
 
-<aside class="w-64 fixed top-0 left-0 h-screen bg-blue-900 text-white p-6 space-y-4 z-10">
-    <h2 class="text-xl font-bold mb-6">Admin Phú Thịnh</h2>
-    <nav class="space-y-2">
-        <a href="@Url.Action("Index", "ThongKe")" class="@activeClass("Index", "ThongKe") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📊 Tổng quan</a>
 
-        <a href="@Url.Action("Booking", "AdminQuanLy")" class="@activeClass("Booking", "AdminQuanLy") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📅 Quản lý đặt sân</a>
 
-        <a href="@Url.Action("BanHang", "QuanLyBanHang")" class="@activeClass("BanHang", "QuanLyBanHang") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">🛒 Quản lý bán hàng</a>
 
-        <a href="@Url.Action("Index", "QuanLyKhoHang")" class="@activeClass("Index", "QuanLyKhoHang") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📦 Quản lý kho hàng</a>
+<aside id="sidebar" class="w-64 fixed top-0 left-0 h-screen bg-blue-900 text-white p-4 space-y-4 z-10 transition-all duration-300">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold nav-label">Admin Phú Thịnh</h2>
+        <button id="toggleSidebar" class="text-white hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 4a1 1 0 011-1h4a1 1 0 010 2H5v14h3a1 1 0 110 2H4a1 1 0 01-1-1V4z" />
+            </svg>
+        </button>
+    </div>
+    <nav class="space-y-2 text-sm">
+        <a href="@Url.Action("Index", "ThongKe")" class="@activeClass("Index", "ThongKe") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">📊</span><span class="nav-label">Tổng quan</span>
+        </a>
+        <a href="@Url.Action("Booking", "AdminQuanLy")" class="@activeClass("Booking", "AdminQuanLy") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">📅</span><span class="nav-label">Quản lý đặt sân</span>
+        </a>
+        <a href="@Url.Action("BanHang", "QuanLyBanHang")" class="@activeClass("BanHang", "QuanLyBanHang") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">🛒</span><span class="nav-label">Quản lý bán hàng</span>
+        </a>
+        <a href="@Url.Action("Index", "ChiTieu")" class="@activeClass("Index", "ChiTieu") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">💸</span><span class="nav-label">Quản lý chi tiêu</span>
+        </a>
 
-        <a href="@Url.Action("Index", "QuanLyHoaDont")" class="@activeClass("Index", "QuanLyHoaDont") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📄 Quản lý hóa đơn</a>
+        <a href="@Url.Action("Index", "QuanLyHoaDont")" class="@activeClass("Index", "QuanLyHoaDont") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">📄</span><span class="nav-label">Quản lý hóa đơn</span>
+        </a>
+        <a href="@Url.Action("thongbaotuWEB", "AdminQuanLy")" class="@activeClass("thongbaotuWEB", "AdminQuanLy") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">📢</span><span class="nav-label">Thông báo từ WEB</span>
+        </a>
+        <a href="#" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">📆</span><span class="nav-label">Quản lý lịch làm</span>
+        </a>
+        <a href="#" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+            <span class="text-lg">💰</span><span class="nav-label">Quản lý lương</span>
+        </a>
+        @if (!shouldHideSidebarFor("QuanLyKhoHang", "Index"))
+        {
+            <a href="@Url.Action("Index", "QuanLyKhoHang")" class="@activeClass("Index", "QuanLyKhoHang") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+                <span class="text-lg">📦</span><span class="nav-label">Quản lý kho hàng</span>
+            </a>
+        }
 
-        <a href="#" class="flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📆 Quản lý lịch làm</a>
+        @if (!shouldHideSidebarFor("AdminOnly", "CreateAdmin"))
+        {
+            <a href="@Url.Action("CreateAdmin", "AdminOnly")" class="@activeClass("CreateAdmin", "AdminOnly") flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-700">
+                <span class="text-lg">👥</span><span class="nav-label">Quản lý nhân viên</span>
+            </a>
+        }
 
-        <a href="#" class="flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">💰 Quản lý lương</a>
-
-        <a href="@Url.Action("thongbaotuWEB", "AdminQuanLy")" class="@activeClass("thongbaotuWEB", "AdminQuanLy") flex items-center gap-2 w-full text-left px-4 py-2 rounded hover:bg-blue-700">📢 Thông báo đặt sân từ WEB</a>
     </nav>
 </aside>

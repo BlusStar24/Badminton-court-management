@@ -21,6 +21,12 @@
         user-select: none;
         -webkit-user-select: none;
         -moz-user-select: none;
+        border-width: 2px !important;
+        border-color: #000000 !important;
+    }
+
+    td.custom-cell {
+        border: 1px solid #ccc !important;
     }
 
     #platformDropdown {
@@ -72,7 +78,7 @@
         ×
     </button>
     <div id="bookingDetailContent" class="text-base text-gray-800 print-area">
-        <!-- nội dung popup sẽ được load bằng AJAX -->
+        <!-- nội dung load ajax -->
     </div>
     <button onclick="closeBookingDetail()" class="bg-gray-300 hover:bg-gray-400 text-black font-semibold px-4 py-2 rounded shadow ml-2">
         Xoá tất cả
@@ -81,7 +87,7 @@
 
 </div>
 <!-- Form nhập dữ liệu -->
-<!-- Form nhập dữ liệu -->
+
 <div class="w-full">
     <div class="bg-white p-6 rounded shadow mb-6 space-y-6 w-full ml-6 min-h-[400px]">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -89,8 +95,20 @@
             <div class="space-y-4">
                 <!-- Tên khách hàng -->
                 <div class="relative">
-                    <input id="nameInput" type="text" placeholder="Tên khách hàng"
-                           class="w-full border rounded px-3 py-2 pr-8" />
+                    <!-- Tên khách -->
+                    <div class="flex items-center mb-4 space-x-2">
+                        <input list="suggestKhach" id="nameInput" class="w-full border border-gray-300 rounded px-3 py-1 text-sm outline-none"
+                               placeholder="Tìm khách hàng..." />
+                        <datalist id="suggestKhach">
+                            @foreach (var kh in ViewBag.DanhSachKhachHang as List<string>)
+                            {
+                                <option value="@kh"></option>
+                            }
+                        </datalist>
+                        <button class="w-8 h-8 rounded border border-gray-300 hover:bg-gray-100 flex items-center justify-center">
+                            <i class="fas fa-plus text-gray-700"></i>
+                        </button>
+                    </div>
                     <button type="button" onclick="togglePlatformDropdown()"
                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600">
                         ▼
@@ -135,6 +153,7 @@
                     <select id="paymentMethodSelect" class="border rounded px-3 py-2 w-full">
                         <option value="Tiền mặt">Tiền mặt</option>
                         <option value="Chuyển khoản">Chuyển khoản</option>
+                        <option value="Nợ">Nợ</option>
                     </select>
                 </div>
 
@@ -152,41 +171,51 @@
                     <button onclick="deleteSelectedBookings()" class="bg-red-600 text-white px-4 py-2 rounded">🗑️ Xóa lịch</button>
                 </div>
 
-
-            </div>
-
-            <!-- Cột phải: bộ lọc ngày & giờ -->
-            <div class="space-y-4">
-                <!-- Lọc ngày -->
-                <div>
-                    <label class="font-semibold block mb-2">📅 Chọn ngày hiển thị:</label>
-                    <div id="dayFilter" class="grid grid-cols-3 md:grid-cols-4 gap-2 text-sm">
-                        <!-- checkboxes render động -->
+                <div class="flex gap-6">
+                    <!-- Lọc ngày -->
+                    <div class="w-64">
+                        <label class="font-semibold block mb-2">📅 Chọn ngày hiển thị:</label>
+                        <div class="relative inline-block">
+                            <button id="toggleDayFilter" class="bg-white border px-4 py-2 rounded shadow w-full text-left flex justify-between items-center">
+                                Ngày hiển thị <span class="ml-2">▼</span>
+                            </button>
+                            <div id="dayFilterDropdown" class="absolute z-20 bg-white border rounded shadow p-2 mt-1 w-64 max-h-64 overflow-y-auto hidden">
+                                <div class="mb-2">
+                                    <label><input type="checkbox" id="checkAllDays" class="mr-2" /> Chọn tất cả ngày</label>
+                                </div>
+                                <!-- các checkbox ngày được thêm bằng JS -->
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="toggleAllDays(event)" class="mt-2 bg-emerald-600 text-white px-3 py-1 rounded text-sm">
-                        Chọn tất cả
-                    </button>
-                </div>
 
-                <!-- Lọc giờ -->
-                <div>
-                    <label class="font-semibold block mb-2">🕒 Lọc khung giờ:</label>
-                    <div id="hourFilter" class="grid grid-cols-3 gap-2 text-sm">
-                        <!-- checkboxes render động -->
+                    <!-- Lọc giờ -->
+                    <div class="w-64">
+                        <label class="font-semibold block mb-2">🕒 Lọc khung giờ:</label>
+                        <div class="relative inline-block">
+                            <button id="toggleHourFilter" class="bg-white border px-4 py-2 rounded shadow w-full text-left flex justify-between items-center">
+                                Khung giờ <span class="ml-2">▼</span>
+                            </button>
+                            <div id="hourFilterDropdown" class="absolute z-20 bg-white border rounded shadow p-2 mt-1 w-64 max-h-64 overflow-y-auto hidden">
+                                <div class="mb-2">
+                                    <label><input type="checkbox" id="checkAllHours" class="mr-2" /> Chọn tất cả giờ</label>
+                                </div>
+                                <!-- các checkbox giờ được thêm bằng JS -->
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="clearHourFilter()" class="mt-2 bg-gray-600 text-white px-3 py-1 rounded text-sm">
-                        Bỏ chọn tất cả
-                    </button>
                 </div>
-
                 <!-- Chọn tháng năm -->
                 <div class="flex gap-2 items-center">
                     <select id="monthSelect" class="p-2 border rounded"></select>
                     <select id="yearSelect" class="p-2 border rounded"></select>
                     <button onclick="renderBookingTable()" class="bg-blue-600 text-white px-4 py-2 rounded">Xem lịch</button>
                 </div>
+                <button id="btnShowBookingDetail" class="hidden mt-2 bg-blue-500 text-white px-4 py-2 rounded" onclick="showBookingDetail()">
+                    Xem chi tiết lịch
+                </button>
 
                 <button onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded">📤 Xuất Excel</button>
+
             </div>
         </div>
     </div>
@@ -198,11 +227,14 @@
         <thead class="bg-gray-100 text-gray-700" id="thead"></thead>
         <tbody id="tbody"></tbody>
     </table>
+
 </div>
+
 @section scripts {
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="~/Scripts/Booking.js"></script> <!-- dùng đường dẫn tương ứng -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="~/Scripts/Booking.js?v=2"></script>
     @*<script>
             //function printBookingDetail() {
             //    window.print();
@@ -239,40 +271,58 @@
     <script>
         function printBookingDetailFromPopup() {
             const popup = document.getElementById("bookingDetailPopup");
-            const content = popup.querySelector(".relative"); // đây là khối chứa toàn bộ nội dung cần in
-
-            if (!content) {
+            if (!popup) {
                 alert("Không tìm thấy nội dung cần in.");
                 return;
             }
 
-            const html = content.outerHTML;
+            // Clone phần nội dung cần in
+            const content = popup.cloneNode(true);
+
+            // Xóa các phần có class 'no-print'
+            content.querySelectorAll('.no-print').forEach(el => el.remove());
+
+            // Mở cửa sổ in
             const printWindow = window.open('', '', 'width=1000,height=800');
             printWindow.document.write(`
-            <html>
-            <head>
-                <title>Hóa đơn đặt sân</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-                    th { background-color: #f97316; color: white; }
-                    h2 { text-align: center; color: #f97316; }
-                    .close-btn, .bg-gray-300 { display: none !important; }
-                </style>
-            </head>
-            <body>
-                <h2>HÓA ĐƠN ĐẶT SÂN</h2>
-                ${html}
-            </body>
-            </html>
-        `);
+                <html>
+                    <head>
+                        <title>HÓA ĐƠN ĐẶT SÂN</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+                            th { background-color: #f97316; color: white; }
+                            h2 { text-align: center; color: #f97316; margin-bottom: 16px; }
+                            .close-btn { display: none !important; }
+                        </style>
+                    </head>
+                    <body>
+                        ${content.outerHTML}
+                    </body>
+                </html>
+            `);
+
             printWindow.document.close();
             printWindow.focus();
-            printWindow.print();
-            printWindow.close();
+
+            // Đợi render xong mới in
+            printWindow.onload = function () {
+                printWindow.print();
+                printWindow.close();
+            };
         }
     </script>
 
+
+    <script>
+        $(document).ready(function () {
+            $('#dayMultiSelect').select2({ placeholder: "Chọn ngày hiển thị" });
+            $('#hourMultiSelect').select2({ placeholder: "Chọn khung giờ" });
+
+            $('#dayMultiSelect').on('change', filterBookingTable);
+            $('#hourMultiSelect').on('change', filterBookingTable);
+        });
+    </script>
 }
 

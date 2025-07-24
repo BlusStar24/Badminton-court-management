@@ -9,8 +9,10 @@ namespace QL_SanCauLong.Controllers
 {
     public class QuanLyHoaDontController : Controller
     {
-        QuanLySanCauLongdbEntities db = new QuanLySanCauLongdbEntities();
+        QuanLySanCauLongEntities3 db = new QuanLySanCauLongEntities3();
+
         // GET: QuanLyHoaDont
+        [Authorize]
         public ActionResult Index()
         {
             return View();
@@ -23,43 +25,45 @@ namespace QL_SanCauLong.Controllers
             if (daThanhToan.HasValue)
                 ds = ds.Where(hd => hd.is_paid == daThanhToan.Value);
 
-            if (!string.IsNullOrEmpty(ngay) && DateTime.TryParse(ngay, out var d))
-            {
-                int y = d.Year, m = d.Month, day = d.Day;
+            if (!string.IsNullOrEmpty(ngay) && DateTime.TryParseExact(ngay, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var d))
                 ds = ds.Where(hd => hd.created_at.HasValue &&
-                                    hd.created_at.Value.Year == y &&
-                                    hd.created_at.Value.Month == m &&
-                                    hd.created_at.Value.Day == day);
-            }
+                                    hd.created_at.Value.Year == d.Year &&
+                                    hd.created_at.Value.Month == d.Month &&
+                                    hd.created_at.Value.Day == d.Day);
 
             if (!string.IsNullOrEmpty(thang) && DateTime.TryParse(thang + "-01", out var mt))
-            {
-                int y = mt.Year, m = mt.Month;
                 ds = ds.Where(hd => hd.created_at.HasValue &&
-                                    hd.created_at.Value.Year == y &&
-                                    hd.created_at.Value.Month == m);
-            }
+                                    hd.created_at.Value.Year == mt.Year &&
+                                    hd.created_at.Value.Month == mt.Month);
 
-            var result = ds.Select(hd => new
+            // 👉 Thêm dòng này để sắp xếp theo id giảm dần
+            ds = ds.OrderByDescending(hd => hd.id);
+
+            // SELECT chỉ các trường cần, không dùng ToString() trong SQL
+            var rawData = ds.Select(hd => new
             {
                 hd.id,
                 hd.customer_id,
                 tenKhach = hd.customer.name,
                 hd.total_amount,
                 hd.note,
-                created_at = hd.created_at,
+                hd.created_at,
                 hd.is_paid,
                 hd.payment_method,
                 hd.payment_image
-            }).ToList()
-            .Select(hd => new
+            }).ToList(); // Lúc này đã filter xong mới load lên
+
+            // Sau đó format ngày ở LINQ to Object
+            var result = rawData.Select(hd => new
             {
                 hd.id,
                 hd.customer_id,
                 hd.tenKhach,
                 hd.total_amount,
                 hd.note,
-                created_at = hd.created_at?.ToString("HH:mm:ss d/M/yyyy"),
+                created_at = hd.created_at.HasValue
+                    ? hd.created_at.Value.ToString("yyyy-MM-ddTHH:mm:ss")
+                    : null,
                 hd.is_paid,
                 hd.payment_method,
                 hd.payment_image
@@ -67,56 +71,93 @@ namespace QL_SanCauLong.Controllers
 
             return Json(new { success = true, data = result }, JsonRequestBehavior.AllowGet);
         }
-
-
+        [Authorize]
         [HttpGet]
         public ActionResult ChiTietHoaDon(int id)
         {
-            var hoaDon = db.invoices
-             .Where(h => h.id == id)
-             .AsEnumerable() // chuyển sang LINQ to Objects để dùng ToString
-             .Select(h => new
-             {
-                 h.id,
-                 h.customer_id,
-                 tenKhach = h.customer.name,
-                 h.total_amount,
-                 h.note,
-                 created_at = h.created_at.HasValue
-                     ? h.created_at.Value.ToString("HH:mm:ss d/M/yyyy")
-                     : null,
-                 h.is_paid,
-                 h.payment_method,
-                 h.payment_image
-             }).FirstOrDefault();
+            try
+            {
+                // Bước 1: Truy vấn dữ liệu gốc từ DB
+                var hoaDonRaw = (from h in db.invoices
+                                 where h.id == id
+                                 select new
+                                 {
+                                     h.id,
+                                     h.customer_id,
+                                     customer_name = h.customer.name,
+                                     h.total_amount,
+                                     h.note,
+                                     h.created_at,
+                                     h.is_paid,
+                                     h.payment_method,
+                                     h.payment_image
+                                 }).FirstOrDefault();
 
-            if (hoaDon == null)
-                return Json(new { success = false, message = "Không tìm thấy hóa đơn." }, JsonRequestBehavior.AllowGet);
+                if (hoaDonRaw == null)
+                    return Json(new { success = false, message = "Không tìm thấy hóa đơn." }, JsonRequestBehavior.AllowGet);
 
-            var chiTiet = db.invoice_details
-                .Where(ct => ct.invoice_id == id)
-                .AsEnumerable()
-                .Select(ct => new
+                // Bước 2: Format lại khi đã là LINQ to Objects
+                var hoaDon = new
+                {
+                    hoaDonRaw.id,
+                    hoaDonRaw.customer_id,
+                    tenKhach = string.IsNullOrEmpty(hoaDonRaw.customer_name) ? "(Không có khách)" : hoaDonRaw.customer_name,
+                    hoaDonRaw.total_amount,
+                    hoaDonRaw.note,
+                    created_at = hoaDonRaw.created_at?.ToString("HH:mm:ss d/M/yyyy"),
+                    hoaDonRaw.is_paid,
+                    hoaDonRaw.payment_method,
+                    hoaDonRaw.payment_image
+                };
+
+                // Chi tiết hóa đơn
+                var chiTietRaw = (from ct in db.invoice_details
+                                  join mh in db.mat_hang on ct.item_id equals mh.id into temp
+                                  from mh in temp.DefaultIfEmpty()
+                                  where ct.invoice_id == id
+                                  select new
+                                  {
+                                      ct.id,
+                                      ct.item_id,
+                                      matHangTen = mh.ten_hang,
+                                      ct.quantity,
+                                      ct.unit_price,
+                                      ct.total_price,
+                                      ct.created_at,
+                                      ct.is_paid
+                                  }).ToList();
+
+                var chiTiet = chiTietRaw.Select(ct => new
                 {
                     ct.id,
                     ct.item_id,
-                    tenHang = ct.mat_hang.ten_hang,
+                    tenHang = string.IsNullOrEmpty(ct.matHangTen) ? "(Đã xóa mặt hàng)" : ct.matHangTen,
                     ct.quantity,
                     ct.unit_price,
                     ct.total_price,
-                    created_at = ct.created_at.HasValue
-                        ? ct.created_at.Value.ToString("HH:mm:ss d/M/yyyy")
-                        : null,
+                    created_at = ct.created_at?.ToString("HH:mm:ss d/M/yyyy"),
                     ct.is_paid
                 }).ToList();
 
-            return Json(new
+                return Json(new
+                {
+                    success = true,
+                    hoaDon,
+                    chiTiet
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
             {
-                success = true,
-                hoaDon,
-                chiTiet
-            }, JsonRequestBehavior.AllowGet);
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi xử lý: " + ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stack = ex.StackTrace
+                }, JsonRequestBehavior.AllowGet);
+            }
         }
+
 
         public class ChiTietTrangThaiDTO
         {

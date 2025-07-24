@@ -53,8 +53,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-4 shadow-md text-white mb-8">
         <div class="flex items-center space-x-4">
-            <img src="Images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
-            <img src="/images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
+           <img src="/images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
             <div>
                 <h1 class="text-2xl font-extrabold">Sân Cầu Lông Phú Thịnh</h1>
                 <p class="text-orange-100 text-sm">Badminton Center • Tân Phú</p>
@@ -71,7 +70,7 @@
                     </button>
 
                     <!-- Đăng ký -->
-                    <button onclick="window.open('@Url.Action("Register", "Auth")', '_blank', 'width=460,height=580')" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
+                    <button onclick="window.open('@Url.Action("Register", "Account")', '_blank', 'width=460,height=580')" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
                         Đăng ký
                     </button>
                 </div>
@@ -83,7 +82,7 @@
                     <img src="/Images/avatar.jpg" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white" />
                     <div class="text-left">
                         <div class="font-semibold">@Session["UserName"]</div>
-                        <form action="@Url.Action("Logout", "Auth")" method="post" class="mt-1">
+                        <form action="@Url.Action("Logout", "Account")" method="post" class="mt-1">
                             <button type="submit" class="text-xs text-white bg-orange-600 hover:bg-orange-700 px-2 py-1 rounded-md transition">
                                 Đăng xuất
                             </button>
@@ -584,7 +583,7 @@
 
 
         function openPopup() {
-            const url = `/Auth/Login`;
+            const url = `/Account/Login`;
             const w = 460, h = 580;
             const left = (screen.width - w) / 2;
             const top = (screen.height - h) / 2;

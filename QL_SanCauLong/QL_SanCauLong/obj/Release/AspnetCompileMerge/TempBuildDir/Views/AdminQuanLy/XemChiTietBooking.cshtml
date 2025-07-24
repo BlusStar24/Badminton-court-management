@@ -1,8 +1,8 @@
-﻿@model List<QuanLySanCauLong.Models.BookingInput>
+﻿@model List<QL_SanCauLong.Models.BookingInput>
 @{
     var hoTen = ViewBag.HoTen as string ?? "Khách hàng";
     long tongTien = Model.Sum(b => b.price);
-    var bookingId = ViewBag.BookingId ?? Guid.NewGuid().ToString(); // fallback nếu không truyền
+    var bookingId = ViewBag.BookingId != null ? ViewBag.BookingId.ToString() : Guid.NewGuid().ToString();
     var total = 0L;
 }
 

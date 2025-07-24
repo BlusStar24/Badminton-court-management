@@ -1,0 +1,143 @@
+﻿
+@model List<QL_SanCauLong.Models.BookingHoaDonKhachModel>
+@{
+    ViewBag.Title = "Lịch đã đặt";
+  
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+}
+
+<div class="max-w-[95vw] mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-4 shadow-md text-white mb-8">
+        <div class="flex items-center space-x-4">
+            <img src="https://i.postimg.cc/028FcjPg/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
+            <div>
+                <h1 class="text-2xl font-extrabold">Sân Cầu Lông Phú Thịnh</h1>
+                <p class="text-orange-100 text-sm">Badminton Center • Tân Phú</p>
+            </div>
+        </div>
+        <div class="text-right">
+            @if (Session["UserID"] == null)
+            {
+                <!-- Chưa đăng nhập -->
+                <div class="space-x-2 mb-1">
+                    <!-- Gộp 1 nút đăng nhập duy nhất -->
+                    <button onclick="openPopup()" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
+                        Đăng nhập
+                    </button>
+
+                    <!-- Đăng ký -->
+                    <button onclick="window.open('@Url.Action("Register", "Account")', '_blank', 'width=460,height=580')" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
+                        Đăng ký
+                    </button>
+                </div>
+            }
+            else
+            {
+                <!-- Đăng nhập rồi -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://i.postimg.cc/ydRcFtby/avatar.jpg" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white" />
+                    <div class="text-left">
+                        <div class="font-semibold">@Session["UserName"]</div>
+                        <form action="@Url.Action("Logout", "Account")" method="post" class="mt-1">
+                            <button type="submit" class="text-xs text-white bg-orange-600 hover:bg-orange-700 px-2 py-1 rounded-md transition">
+                                Đăng xuất
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+
+
+    <!-- Lưu ý và liên hệ -->
+    <div class="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-xl shadow mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+
+            <!-- Cột 1: Nội dung -->
+            <div>
+                <h2 class="font-bold text-orange-700 mb-2">📌 Lưu ý:</h2>
+                <ul class="list-disc list-inside text-sm space-y-1 text-gray-700">
+                    <li>Đặt lịch <strong>CỐ ĐỊNH</strong> liên hệ: <a href="tel:0986390504" class="text-orange-600 hover:underline">0986.390.504</a></li>
+                    <li>Khung 18h–22h Thứ 2 - thứ 6 <strong>100k/1h</strong> (CỐ ĐỊNH).</li>
+                    <li>Khung 5h–17h Thứ 2 - thứ 6 hàng tuần giá ưu đãi <strong>49k/1h</strong>.</li>
+                    <li>T7–CN: <strong>89k/1h</strong></li>
+                </ul>
+            </div>
+            <!-- Cột 2: Nút quay lại -->
+            <div class="flex justify-center items-center sm:mt-6">
+                <a href="@Url.Action("ViewDatSan", "Booking")" class="px-5 py-2 bg-orange-500 text-white rounded-lg shadow hover:bg-orange-600 transition">
+                    Trở lại trang đặt sân
+                </a>
+            </div>
+
+            <!-- Cột 3: Liên hệ -->
+            <div class="flex flex-col items-center sm:items-end">
+                <span class="text-base font-semibold text-gray-700 mb-2">Liên hệ:</span>
+                <div class="flex gap-5 text-[22px]">
+                    <a href="https://zalo.me/0986390504" target="_blank" title="Zalo" class="hover:scale-110 transition">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/2048px-Icon_of_Zalo.svg.png" alt="Zalo" class="w-6 h-6">
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61554189003939" target="_blank" title="Facebook" class="text-blue-600 hover:scale-110 transition"><i class="fab fa-facebook"></i></a>
+                    <a href="tel:0986390504" title="Gọi điện" class="text-green-600 hover:scale-110 transition"><i class="fas fa-phone-alt"></i></a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div>
+        <h2 class="text-xl font-semibold text-blue-600 mb-4">📅 Lịch sân bạn đã đặt</h2>
+
+        @if (!Model.Any())
+        {
+            <p>Bạn chưa có lịch đặt sân nào.</p>
+        }
+        else
+        {
+            <table class="table-auto w-full border">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 border">Ngày</th>
+                        <th class="px-4 py-2 border">Giờ</th>
+                        <th class="px-4 py-2 border">Sân</th>
+                        <th class="px-4 py-2 border">Loại</th>
+                        <th class="px-4 py-2 border">Giá</th>
+                        <th class="px-4 py-2 border">Thanh toán</th>
+                        <th class="px-4 py-2 border">Hình thức</th>
+                        <th class="px-4 py-2 border">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr class="border-t">
+                            <td class="px-4 py-2 border">@b.Date</td>
+                            <td class="px-4 py-2 border">@b.TimeRange</td>
+                            <td class="px-4 py-2 border">@b.Court</td>
+                            <td class="px-4 py-2 border">@b.Type</td>
+                            <td class="px-4 py-2 border">@b.Price.ToString("N0") đ</td>
+                            <td class="px-4 py-2 border">@b.IsPaid</td>
+                            <td class="px-4 py-2 border">@b.PaymentMethod</td>
+                            <td class="px-4">
+                                @{
+                                    var colorClass = b.IsConfirmed.Contains("✔️")
+                                        ? "bg-green-100 text-green-800"
+                                        : b.IsConfirmed.Contains("⏳")
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-red-100 text-red-800";
+                                }
+                                <span class="px-2 py-1 rounded-full @colorClass">
+                                    @b.IsConfirmed
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>
+  

@@ -1,0 +1,155 @@
+﻿@{ Response.ContentEncoding = System.Text.Encoding.UTF8; }
+@{ Response.Charset = "utf-8"; }
+@{ Layout = null; }
+
+<body>
+    <div class="login">
+        <form action="@Url.Action("Register", "Account")" method="POST" accept-charset="UTF-8" class="form-atri">
+            <h1 class="text-2xl font-bold">Đăng Ký Tài Khoản Khách Hàng</h1>
+
+            @if (!string.IsNullOrEmpty(ViewBag.Message))
+            {
+                <div class="error-message">@ViewBag.Message</div>
+            }
+
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="HoTen" id="hoten" placeholder="Họ và tên" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-phone"></i>
+                <input type="text" name="SoDienThoai" id="sodienthoai" placeholder="Số điện thoại (10 chữ số)" required pattern="\d{10}">
+            </div>
+
+            <button type="submit">Đăng Ký</button>
+            <div class="register-link">
+                Đã có tài khoản?
+                <a href="@Url.Action("Login", "Account")">Đăng nhập ngay</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #ffcc80, #ff8a65);
+        /* nhẹ nhàng hơn */
+    }
+
+    .form-atri {
+        padding: 40px;
+        width: 400px;
+        background-color: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+
+
+    h1 {
+        color: #2d3436;
+        margin-bottom: 25px;
+    }
+
+    .error-message {
+        color: #e53935;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 1.2rem;
+    }
+
+        .input-group i {
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 1px solid #dcdde1;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            color: #2d3436;
+        }
+
+            .input-group input:focus {
+                border-color: #7e57c2;
+                background: #f3e5f5;
+                outline: none;
+            }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        border-radius: 10px;
+        background-color: #00b894;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+    }
+
+        button:hover {
+            background-color: #019875;
+        }
+
+    .register-link {
+        color: #7e57c2;
+        font-size: 0.9rem;
+        margin-top: 15px;
+        display: block;
+    }
+
+        .register-link a {
+            color: #7e57c2;
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+
+            .register-link a:hover {
+                color: #5e35b1;
+            }
+</style>
+<style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

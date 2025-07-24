@@ -554,7 +554,7 @@ function renderBookingTable() {
                         data: {
                             date: b.date,
                             court_id: b.court_id,
-                            hour: merged.start_time
+                            hour: merged.start_time.toFixed(1)
                         },
                         dataType: "html",
                         success: function (html) {

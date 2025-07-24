@@ -1,7 +1,10 @@
 ﻿@model QL_SanCauLong.Models.DashboardViewModel
+@using System.Globalization
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Trang chính";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+    var currentMonth = DateTime.Today.ToString("yyyy-MM");
 }
 
 <h1 class="text-2xl font-bold mb-4">📊 Tổng quan</h1>
@@ -38,6 +41,146 @@
     <h3 class="text-lg font-semibold mb-2">🗓 Tháng này - Chuyển khoản</h3>
     <p class="text-2xl font-bold text-indigo-600">@String.Format("{0:N0}", Model.DoanhThuThang_ChuyenKhoan)₫</p>
 </div>
+<div class="bg-white mt-8 p-6 rounded shadow">
+    <h3 class="text-lg font-semibold mb-4">📌 Công nợ khách hàng</h3>
+
+    @if (Model.CongNoKhachHang != null && Model.CongNoKhachHang.Any())
+    {
+        <table class="table-auto w-full text-sm text-left text-gray-700">
+            <thead class="text-xs uppercase bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2">Mã KH</th>
+                    <th class="px-4 py-2">Tên khách hàng</th>
+                    <th class="px-4 py-2">Nợ Tiền Đặt Sân</th>
+                    <th class="px-4 py-2">Nợ Hóa đơn</th>
+                    <th class="px-4 py-2">Tổng nợ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CongNoKhachHang)
+                {
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">@item.customer_id</td>
+                        <td class="px-4 py-2">@item.customer_name</td>
+                        <td class="px-4 py-2 text-red-600">@item.no_booking.ToString("N0") ₫</td>
+                        <td class="px-4 py-2 text-yellow-600">@item.no_hoadon.ToString("N0") ₫</td>
+                        <td class="px-4 py-2 font-bold text-green-600">
+                            @((decimal?)item.tong_no ?? 0) ₫
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+            <tfoot>
+                <tr class="bg-orange-50 font-bold text-base text-green-700">
+                    <td colspan="4" class="px-4 py-2 text-right">Tổng công nợ:</td>
+                    <td class="px-4 py-2">@Model.TongCongNoTatCaKhach ₫</td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+    else
+    {
+        <p class="text-gray-500">Không có khách hàng nào đang nợ.</p>
+    }
+</div>
+<form method="get" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div>
+        <label class="block text-sm font-medium">Lọc theo ngày</label>
+        <input type="date" name="ngayLoc" class="border rounded px-2 py-1 w-full" value="@Request["ngayLoc"]" />
+    </div>
+    <div>
+        <label class="block text-sm font-medium">Lọc theo tháng</label>
+        <select name="thangLoc" class="border rounded px-2 py-1 w-full">
+            @for (int i = 1; i <= 12; i++)
+            {
+                <option value="@i" @(Request["thangLoc"] == i.ToString() ? "selected" : "")>Tháng @i</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">Năm</label>
+        <input type="number" name="namLoc" class="border rounded px-2 py-1 w-full" value="@DateTime.Now.Year" />
+    </div>
+    <div>
+        <label class="block text-sm font-medium">Sản phẩm</label>
+        <select name="sanPhamId" class="border rounded px-2 py-1 w-full">
+            <option value="">-- Tất cả --</option>
+            @foreach (var item in ViewBag.DanhSachMatHang as List<QL_SanCauLong.Models.mat_hang>)
+            {
+                <option value="@item.id" @(ViewBag.SanPhamId != null && ViewBag.SanPhamId == item.id ? "selected" : "")>
+                    @item.ten_hang
+                </option>
+            }
+        </select>
+    </div>
+    <div class="md:col-span-4">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded mt-2">Lọc thống kê</button>
+    </div>
+</form>
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+    <!-- Mặt hàng bán hôm nay -->
+    <div class="bg-white p-6 rounded shadow">
+        <h3 class="text-lg font-semibold mb-4">📦 Mặt hàng bán trong ngày</h3>
+        <table class="table-auto w-full text-sm text-left text-gray-700">
+            <thead class="text-xs uppercase bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2">Tên mặt hàng</th>
+                    <th class="px-4 py-2">Số lượng</th>
+                    <th class="px-4 py-2">Tổng tiền</th>
+                    <th class="px-4 py-2">Hình ảnh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.MatHangBanTrongNgay)
+                {
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">@item.TenHang</td>
+                        <td class="px-4 py-2">@item.SoLuong</td>
+                        <td class="px-4 py-2 font-semibold text-green-600">@item.TongTien.ToString("N0") ₫</td>
+                        <td class="px-4 py-2 flex items-center space-x-2">
+                            <img src="@item.HinhAnh" alt="ảnh" class="w-10 h-10 object-cover rounded" />
+                            <span>@item.TenHang</span>
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mặt hàng bán trong tháng -->
+    <div class="bg-white p-6 rounded shadow">
+        <h3 class="text-lg font-semibold mb-4">📦 Mặt hàng bán trong tháng</h3>
+        <table class="table-auto w-full text-sm text-left text-gray-700">
+            <thead class="text-xs uppercase bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2">Tên mặt hàng</th>
+                    <th class="px-4 py-2">Số lượng</th>
+                    <th class="px-4 py-2">Tổng tiền</th>
+                    <th class="px-4 py-2">Hình ảnh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.MatHangBanTrongThang)
+                {
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">@item.TenHang</td>
+                        <td class="px-4 py-2">@item.SoLuong</td>
+                        <td class="px-4 py-2 font-semibold text-blue-600">@item.TongTien.ToString("N0") ₫</td>
+                        <td class="px-4 py-2 flex items-center space-x-2">
+                            <img src="@item.HinhAnh" alt="ảnh" class="w-10 h-10 object-cover rounded" />
+                            <span>@item.TenHang</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
 <!-- Biểu đồ -->
 <div class="bg-white mt-8 p-6 rounded shadow">

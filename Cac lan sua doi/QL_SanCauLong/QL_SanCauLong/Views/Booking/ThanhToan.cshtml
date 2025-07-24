@@ -1,0 +1,561 @@
+﻿
+@using QL_SanCauLong.Models
+
+@{
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+    ViewBag.Title = "Xác nhận đặt sân";
+    var list = Model as List<QL_SanCauLong.Models.BookingInput>;
+    decimal tongTien = list?.Sum(b => b.price) ?? 0;
+    var hoTen = Session["UserName"]?.ToString() ?? "";
+    var sdt = Session["UserPhone"]?.ToString() ?? "";
+}
+@section styles {
+    <style>
+        /* Reset và căn chỉnh cơ bản */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Tùy chỉnh container chính */
+        div.max-w-4xl {
+            max-width: 900px !important;
+            margin: 2rem auto !important;
+            background: linear-gradient(135deg, #ffffff, #f9fafb) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+            padding: 2.5rem !important;
+            border: 1px solid #e5e7eb !important;
+        }
+
+        /* Header với logo */
+        div.flex.flex-col.items-center {
+            padding-bottom: 1.5rem !important;
+            border-bottom: 2px solid #f97316 !important;
+            text-align: center !important;
+        }
+
+        .logo-container {
+            width: 200px !important; /* Tăng kích thước logo trên desktop */
+            height: 200px !important;
+            border-radius: 50% !important;
+            border: 4px solid #f97316 !important;
+            background: #fff !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin-bottom: 1.5rem !important; /* Tăng khoảng cách dưới logo */
+        }
+
+            .logo-container img {
+                max-width: 100% !important; /* Giới hạn ảnh trong container */
+                max-height: 100% !important;
+                object-fit: contain !important; /* Giữ tỷ lệ và không tràn */
+                transition: transform 0.3s ease !important;
+            }
+
+                .logo-container img:hover {
+                    transform: scale(1.1) !important;
+                }
+
+
+        h1.text-xl.font-extrabold {
+            font-size: 1.75rem !important; /* Tăng kích thước tiêu đề để cân đối */
+            color: #f97316 !important;
+            letter-spacing: -0.025em !important;
+        }
+
+        p.text-sm.text-gray-500 {
+            color: #6b7280 !important;
+            font-weight: 500 !important;
+        }
+
+        h2.text-xl.font-bold {
+            font-size: 1.75rem !important; /* Tăng kích thước tiêu đề hóa đơn */
+            color: #1f2937 !important;
+        }
+
+        p.text-sm.text-gray-400 {
+            color: #9ca3af !important;
+        }
+
+        /* Form thông tin khách hàng */
+        div.grid.grid-cols-1 {
+            gap: 1.5rem !important;
+        }
+
+        @@media (min-width: 768px) {
+            div.grid.grid-cols-1 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
+
+        label.font-semibold {
+            font-size: 1rem !important; /* Tăng kích thước nhãn */
+            color: #1f2937 !important;
+            font-weight: 600 !important;
+        }
+
+        input[type="text"] {
+            border: 2px solid #d1d5db !important;
+            border-radius: 10px !important;
+            padding: 1rem !important; /* Tăng padding input */
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+            input[type="text"]:focus {
+                border-color: #f97316 !important;
+                box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2) !important;
+                outline: none !important;
+            }
+
+        /* Bảng hóa đơn */
+        div.overflow-x-auto {
+            margin-bottom: 2.5rem !important;
+        }
+
+        table.table-auto {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            font-size: 1rem !important; /* Tăng kích thước chữ trong bảng */
+            background: #fff !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        thead.bg-f97316 {
+            background: #f97316 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        th, td {
+            padding: 1.2rem !important;
+            border: 1px solid #e5e7eb !important;
+            text-align: center !important;
+        }
+
+        tr:hover {
+            background: #f9fafb !important;
+        }
+
+        tr.bg-amber-100 {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            font-weight: 600 !important;
+        }
+
+        td.text-right {
+            padding-right: 1.5rem !important;
+        }
+
+        /* Nút xác nhận */
+        button[type="button"] {
+            width: 100% !important;
+            background: linear-gradient(90deg, #f97316, #fdba74) !important;
+            color: #fff !important;
+            padding: 1.2rem !important;
+            border-radius: 10px !important;
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            transition: all 0.4s ease !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+            position: relative;
+            z-index: 10;
+        }
+
+            /* Hover & active */
+            button[type="button"]:hover {
+                background: linear-gradient(90deg, #e06b1a, #f9a66c) !important;
+                transform: translateY(-3px) !important;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            button[type="button"]:active {
+                transform: translateY(0) !important;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+            }
+
+        #modalChuyenKhoan button {
+            background: linear-gradient(90deg, #f97316, #fdba74) !important;
+            color: #fff !important;
+            padding: 1rem 1.5rem !important;
+            border-radius: 10px !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+
+            #modalChuyenKhoan button:hover {
+                background: linear-gradient(90deg, #e06b1a, #f9a66c) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            #modalChuyenKhoan button:active {
+                transform: translateY(0) !important;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1) !important;
+            }
+
+        /* Responsive cho màn hình nhỏ */
+        @@media (max-width: 640px) {
+            div.max-w-4xl {
+                margin: 1rem !important;
+                padding: 1.5rem !important;
+            }
+
+            div.flex.flex-col.items-center {
+                gap: 1rem !important;
+            }
+
+            .logo-container {
+                width: 80px !important;
+                height: 80px !important;
+            }
+
+            h1.text-xl.font-extrabold {
+                font-size: 1.5rem !important;
+            }
+
+            h2.text-xl.font-bold {
+                font-size: 1.5rem !important;
+            }
+
+            div.text-right {
+                text-align: center !important;
+            }
+
+            div.grid.grid-cols-1 {
+                grid-template-columns: 1fr !important;
+            }
+
+            th, td {
+                padding: 0.8rem !important; /* Giảm padding trên mobile */
+                font-size: 0.9rem !important; /* Giảm kích thước chữ trên mobile */
+            }
+
+            button[type="submit"] {
+                font-size: 1.1rem !important; /* Giảm kích thước chữ nút trên mobile */
+                padding: 1rem !important;
+            }
+        }
+    </style>
+}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <!-- Header với logo -->
+    <div class="flex flex-col items-center justify-center mb-8">
+        <div class="logo-container">
+            <img src="@Url.Content("~/Images/phu-thinh-logo.png")" alt="Logo Phú Thịnh" class="max-w-full max-h-full object-contain" />
+        </div>
+        <h1 class="text-xl font-extrabold text-f97316 mt-4 text-center">Sân Cầu Lông Phú Thịnh</h1>
+        <p class="text-sm text-gray-500 font-medium text-center">Badminton Court Booking • Tân Phú</p>
+    </div>
+
+    <!-- Hóa đơn đặt sân căn giữa -->
+    <div class="w-full h-[2px] bg-f97316 mb-4"></div>
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">HÓA ĐƠN ĐẶT SÂN</h2>
+        <p class="text-sm text-gray-400">Ngày tạo: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <div class="w-full h-[2px] bg-f97316 mb-8"></div>
+
+    <!-- Form thông tin khách hàng -->
+    <form method="post" action="/Booking/LuuDatSan" id="formDatSan">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+                <label class="block font-semibold text-md text-gray-700 mb-2">Họ và tên</label>
+                <input type="text" name="HoTen" required
+                       value="@hoTen"
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 h-[56px] focus:ring-2 focus:ring-f97316 focus:border-f97316 outline-none transition" />
+            </div>
+            <div>
+                <label class="block font-semibold text-md text-gray-700 mb-2">Số điện thoại</label>
+                <input type="text" name="SoDienThoai" required
+                       value="@sdt"
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 h-[56px] focus:ring-2 focus:ring-f97316 focus:border-f97316 outline-none transition" />
+            </div>
+        </div>
+
+        <!-- Bảng hóa đơn -->
+        <div class="overflow-x-auto mb-8">
+            <table class="table-auto w-full text-md border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-f97316 text-white">
+                    <tr>
+                        <th class="border p-4">Thứ</th>
+                        <th class="border p-4">Ngày</th>
+                        <th class="border p-4">Sân</th>
+                        <th class="border p-4">Bắt đầu</th>
+                        <th class="border p-4">Kết thúc</th>
+                        <th class="border p-4">Loại đặt</th>
+                        <th class="border p-4">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr class="text-center hover:bg-gray-50 transition">
+                            <td class="border p-4">@b.DayName</td>
+                            <td class="border p-4">@DateTime.Parse(b.date).ToString("dd/MM/yyyy")</td>
+                            <td class="border p-4">@b.court</td>
+                            <td class="border p-4">@b.start</td>
+                            <td class="border p-4">@b.end</td>
+                            <td class="border p-4">@b.type</td>
+                            <td class="border p-4 text-right">@b.price.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="bg-amber-100 font-semibold text-right">
+                        <td colspan="6" class="border p-4 text-right">Tổng cộng:</td>
+                        <td class="border p-4">@tongTien.ToString("N0") đ</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Hidden inputs -->
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <input type="hidden" name="bookings[@i].date" value="@Model[i].date" />
+            <input type="hidden" name="bookings[@i].court" value="@Model[i].court" />
+            <input type="hidden" name="bookings[@i].start" value="@Model[i].start" />
+            <input type="hidden" name="bookings[@i].end" value="@Model[i].end" />
+            <input type="hidden" name="bookings[@i].type" value="@Model[i].type" />
+            <input type="hidden" name="bookings[@i].price" value="@Model[i].price" />
+        }
+
+        <!-- Hình thức thanh toán -->
+        <div class="mb-6">
+            <label class="block font-semibold text-md text-gray-700 mb-2">Hình thức thanh toán</label>
+            <div class="flex space-x-4">
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="payment_method" value="Tiền mặt" checked class="form-radio text-f97316" />
+                    <span>Tiền mặt</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="payment_method" value="Chuyển khoản" class="form-radio text-f97316" />
+                    <span>Chuyển khoản</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Nút xác nhận -->
+        <button type="button"
+                onclick="xuLyDatSan()"
+                class="w-full mt-6 bg-gradient-to-r from-f97316 to-fdb713 text-white py-4 rounded-lg font-bold text-xl shadow-lg hover:shadow-xl transition-transform hover:-translate-y-1">
+            XÁC NHẬN & THANH TOÁN
+        </button>
+
+
+        <!-- Modal chuyển khoản -->
+        <div id="modalChuyenKhoan" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl w-full max-w-4xl p-8 shadow-2xl relative text-gray-800">
+                    <button onclick="closeModal()" class="absolute top-3 right-5 text-3xl text-gray-500 hover:text-red-500">&times;</button>
+                    <h3 class="text-2xl font-bold text-center text-green-700 mb-2">Chuyển khoản để hoàn tất đặt sân</h3>
+                    <p class="text-center text-base text-gray-600 mb-4">
+                        Vui lòng chuyển <span class="text-red-600 font-bold">@tongTien.ToString("N0") đ</span> theo thông tin bên dưới.
+                    </p>
+                    <p class="text-center text-sm text-gray-500 mb-6">
+                        Thời gian giữ chỗ còn lại: <span id="countdown" class="font-semibold text-orange-600">10:00</span>
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 items-center justify-center">
+                        <div class="flex justify-center">
+                            <img src="@Url.Content("~/Images/ma_qr_thanhtoan.jpg")" class="w-80 h-80 object-contain border p-2 rounded-md shadow-lg" />
+                        </div>
+                        <div class="text-base space-y-2">
+                            <p><strong>Ngân hàng:</strong> BIDV</p>
+                            <p><strong>Số tài khoản:</strong> 8844472165</p>
+                            <p><strong>Tên tài khoản:</strong> Truong Hai Trieu</p>
+                            <p><strong>Nội dung:</strong> <span id="noiDungChuyen">SDT - Tên</span></p>
+                        </div>
+                    </div>
+                    <!-- Thông tin đặt sân -->
+                    <div class="overflow-x-auto mb-6">
+                        <h4 class="text-lg font-semibold mb-2 text-gray-700">Chi tiết đặt sân</h4>
+                        <table class="table-auto w-full text-sm border border-gray-300 rounded-lg shadow">
+                            <thead class="bg-gray-100 text-gray-800">
+                                <tr>
+                                    <th class="border p-2">Thứ</th>
+                                    <th class="border p-2">Ngày</th>
+                                    <th class="border p-2">Sân</th>
+                                    <th class="border p-2">Bắt đầu</th>
+                                    <th class="border p-2">Kết thúc</th>
+                                    <th class="border p-2">Loại</th>
+                                    <th class="border p-2">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var b in Model)
+                                {
+                                    <tr class="text-center hover:bg-gray-50">
+                                        <td class="border p-2">@b.DayName</td>
+                                        <td class="border p-2">@DateTime.Parse(b.date).ToString("dd/MM/yyyy")</td>
+                                        <td class="border p-2">@b.court</td>
+                                        <td class="border p-2">@b.start</td>
+                                        <td class="border p-2">@b.end</td>
+                                        <td class="border p-2">@b.type</td>
+                                        <td class="border p-2 text-right">@b.price.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-amber-100 font-semibold text-right">
+                                    <td colspan="6" class="border p-2 text-right">Tổng cộng:</td>
+                                    <td class="border p-2">@tongTien.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <!-- Upload minh chứng -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tải ảnh minh chứng chuyển khoản:</label>
+                        <input type="file" name="payment_image" id="uploadProof" accept="image/*" class="block w-full border border-gray-300 p-2 rounded-md" onchange="previewImage()" />
+                        <div class="mt-3">
+                            <img id="previewImg" class="max-h-64 w-auto mx-auto rounded-md border hidden object-contain" />
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between border-t pt-5">
+                        <button onclick="submitChuyenKhoan()" class="bg-f97316 hover:bg-orange-500 text-white font-bold py-3 px-5 rounded-lg">
+                            Xác nhận đã chuyển khoản
+                        </button>
+                        <button onclick="closeModal()" class="text-gray-600 underline">Quay lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+@section scripts {
+    <script>
+        let countdownInterval;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("formDatSan").addEventListener("submit", e => e.preventDefault());
+        });
+
+        function openModal(amount, sdt, ten) {
+            document.getElementById("modalChuyenKhoan").classList.remove("hidden");
+
+            const noiDung = document.getElementById("noiDungChuyen");
+            if (noiDung) {
+                noiDung.innerText = `${sdt} - ${ten}`;
+            }
+
+            startCountdown(900);
+        }
+        function closeModal() {
+            document.getElementById("modalChuyenKhoan").classList.add("hidden");
+            clearInterval(countdownInterval);
+        }
+
+        function startCountdown(seconds) {
+            const countdown = document.getElementById("countdown");
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                countdown.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                if (--seconds < 0) {
+                    clearInterval(countdownInterval);
+                    closeModal();
+                    alert("Hết thời gian giữ chỗ. Vui lòng đặt lại.");
+                }
+            }, 1000);
+        }
+
+        function xuLyDatSan() {
+            const form = document.getElementById("formDatSan");
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                const invalid = form.querySelector(':invalid');
+                if (invalid) {
+                    invalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    invalid.focus({ preventScroll: true });
+                }
+                return;
+            }
+
+            const method = document.querySelector("input[name='payment_method']:checked").value;
+            if (method === "Chuyển khoản") {
+                const sdt = form.querySelector("input[name='SoDienThoai']").value;
+                const ten = form.querySelector("input[name='HoTen']").value;
+                const total = document.getElementById("tongThanhTien")?.dataset.value || 10000;
+                openModal(parseInt(total), sdt, ten);
+            } else {
+                guiDuLieuDatSan("Tiền mặt");
+            }
+        }
+
+        function submitChuyenKhoan() {
+            guiDuLieuDatSan("Chuyển khoản");
+        }
+
+        function guiDuLieuDatSan(method) {
+            const form = document.getElementById("formDatSan");
+            const formData = new FormData(form);
+            formData.set("payment_method", method);
+
+            const fileInput = document.getElementById("uploadProof");
+            if (fileInput && fileInput.files.length > 0) {
+                formData.append("payment_image", fileInput.files[0]);
+            }
+
+            fetch('/Booking/LuuDatSan', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.requireConfirm) {
+                        if (confirm(data.message)) {
+                            document.querySelector("input[name='HoTen']").value = data.message.split(": ")[1].split(".")[0];
+                            guiDuLieuDatSan(method);
+                        }
+                    } else if (data.success) {
+                        alert("Đặt sân thành công");
+                        window.location.href = data.redirectUrl || "/Booking/ViewDatSan";
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => alert("Có lỗi xảy ra: " + err.message));
+        }
+        function previewImage() {
+            const input = document.getElementById("uploadProof");
+            const preview = document.getElementById("previewImg");
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (!file.type.startsWith("image/")) {
+                    alert("Vui lòng chọn đúng định dạng ảnh.");
+                    input.value = ""; // reset input
+                    preview.classList.add("hidden");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.classList.remove("hidden");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+    </script>
+}
+
+
+

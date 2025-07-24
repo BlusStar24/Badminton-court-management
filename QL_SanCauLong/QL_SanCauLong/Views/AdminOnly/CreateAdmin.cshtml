@@ -1,0 +1,118 @@
+﻿@model List<QL_SanCauLong.Controllers.AdminOnlyController>
+
+@{
+    ViewBag.Title = "Tạo tài khoản Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-xl font-semibold text-center text-blue-600 my-4">➕ Tạo tài khoản Admin mới</h2>
+
+
+
+@using (Html.BeginForm("CreateAdmin", "AdminOnly", FormMethod.Post))
+{
+    <div class="space-y-4 max-w-md mx-auto bg-white shadow-md rounded p-6">
+        <div>
+            <label class="block font-medium">Họ tên:</label>
+            <input type="text" name="name" required class="w-full border px-3 py-2 rounded" />
+        </div>
+        <div>
+            <label class="block font-medium">Số điện thoại:</label>
+            <input type="text" name="phone" required class="w-full border px-3 py-2 rounded" />
+        </div>
+        <div>
+            <label class="block font-medium">Mật khẩu:</label>
+            <input type="password" name="password" required class="w-full border px-3 py-2 rounded" />
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Tạo Admin
+        </button>
+    </div>
+
+}
+@if (ViewBag.Admins != null)
+{
+    <h3 class="text-lg font-semibold mt-10 mb-4 text-center text-gray-700">📋 Danh sách tài khoản Admin</h3>
+    <table class="table-auto w-full border text-sm text-left bg-white shadow">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border px-4 py-2">ID</th>
+                <th class="border px-4 py-2">Tên</th>
+                <th class="border px-4 py-2">SĐT</th>
+                <th class="border px-4 py-2">Mật khẩu</th>
+                <th class="border px-4 py-2">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var admin in ViewBag.Admins as List<QL_SanCauLong.Models.customer>)
+            {
+                <tr class="hover:bg-gray-50">
+                    <td class="border px-4 py-2">@admin.id</td>
+                    <td class="border px-4 py-2">@admin.name</td>
+                    <td class="border px-4 py-2">@admin.phone</td>
+                    <td class="border px-4 py-2">
+                        <input type="password" id="pw_@admin.id" value="@admin.password"
+                               class="border px-2 py-1 rounded w-40" />
+                    </td>
+                    <td class="border px-4 py-2 space-x-2">
+                        <button onclick="capNhatMatKhau(@admin.id)" class="bg-yellow-500 text-white px-3 py-1 rounded">Cập nhật</button>
+                        <button onclick="xoaTaiKhoan(@admin.id)" class="bg-red-600 text-white px-3 py-1 rounded">Xoá</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="text-red-600 text-center mt-4">
+        @Html.ValidationSummary()
+    </div>
+}
+@section scripts {
+    <script>
+        function capNhatMatKhau(id) {
+            const pw = document.getElementById(`pw_${id}`).value;
+            if (!pw) {
+                alert("Vui lòng nhập mật khẩu mới.");
+                return;
+            }
+            fetch('/AdminOnly/UpdatePassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: JSON.stringify({ id: id, newPassword: pw })
+            }).then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Đã cập nhật mật khẩu.");
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                });
+        }
+
+        function xoaTaiKhoan(id) {
+            if (!confirm("Bạn có chắc chắn muốn xoá tài khoản admin này?")) return;
+            fetch('/AdminOnly/DeleteAdmin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: JSON.stringify({ id: id })
+            }).then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Đã xoá tài khoản.");
+                        location.reload();
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                });
+        }
+    </script>
+}

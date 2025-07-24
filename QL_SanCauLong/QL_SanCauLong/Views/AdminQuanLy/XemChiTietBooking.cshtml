@@ -1,8 +1,8 @@
-﻿@model List<QuanLySanCauLong.Models.BookingInput>
+﻿@model List<QL_SanCauLong.Models.BookingInput>
 @{
     var hoTen = ViewBag.HoTen as string ?? "Khách hàng";
     long tongTien = Model.Sum(b => b.price);
-    var bookingId = ViewBag.BookingId ?? Guid.NewGuid().ToString(); // fallback nếu không truyền
+    var bookingId = ViewBag.BookingId != null ? ViewBag.BookingId.ToString() : Guid.NewGuid().ToString();
     var total = 0L;
 }
 
@@ -109,9 +109,9 @@
         </tfoot>
     </table>
 
-    <div class="text-right mt-4">
+    <div class="text-right mt-4 no-print">
         <button onclick="printBookingDetailFromPopup()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded shadow mt-4">
-            In hóa đơn
+            In Lịch Sân
         </button>
     </div>
 </div>

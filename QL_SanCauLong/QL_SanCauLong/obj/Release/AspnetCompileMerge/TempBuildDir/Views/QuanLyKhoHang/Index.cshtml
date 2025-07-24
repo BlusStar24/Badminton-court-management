@@ -3,7 +3,7 @@
     ViewBag.Title = "Danh sách mặt hàng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var idDangSua = ViewBag.IdDangSua as int?;
-    var tonKhoList = new QL_SanCauLong.Models.QuanLySanCauLongdbEntities().fn_xem_ton_kho_chi_tiet().ToList();
+    var tonKhoList = new QL_SanCauLong.Models.QuanLySanCauLongEntities().fn_xem_ton_kho_chi_tiet().ToList();
 }
 <form id="formNhapKho" class="grid grid-cols-1 md:grid-cols-4 gap-4" method="post" action="@Url.Action("NhapKho", "QuanLyKhoHang")">
     <select name="item_id" required class="border p-2 rounded text-sm col-span-2">

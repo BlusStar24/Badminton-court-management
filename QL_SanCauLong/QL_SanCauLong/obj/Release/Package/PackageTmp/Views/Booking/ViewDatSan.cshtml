@@ -12,7 +12,7 @@
         }
 
         .locked {
-            background-color: #d1d5db !important;
+            background-color: #697a92 !important;
             cursor: not-allowed;
             opacity: 0.4;
             pointer-events: none;
@@ -53,8 +53,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-4 shadow-md text-white mb-8">
         <div class="flex items-center space-x-4">
-            <img src="Images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
-            <img src="/images/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
+            <img src="https://i.postimg.cc/028FcjPg/phu-thinh-logo.png" alt="Logo Phú Thịnh" class="h-16 w-16 rounded-full bg-white p-1" />
             <div>
                 <h1 class="text-2xl font-extrabold">Sân Cầu Lông Phú Thịnh</h1>
                 <p class="text-orange-100 text-sm">Badminton Center • Tân Phú</p>
@@ -71,7 +70,7 @@
                     </button>
 
                     <!-- Đăng ký -->
-                    <button onclick="window.open('@Url.Action("Register", "Auth")', '_blank', 'width=460,height=580')" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
+                    <button onclick="window.open('@Url.Action("Register", "Account")', '_blank', 'width=460,height=580')" class="bg-white text-orange-600 font-semibold px-3 py-1 rounded-lg shadow hover:bg-orange-100 transition">
                         Đăng ký
                     </button>
                 </div>
@@ -80,10 +79,10 @@
             {
                 <!-- Đăng nhập rồi -->
                 <div class="flex items-center space-x-3">
-                    <img src="/Images/avatar.jpg" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white" />
+                    <img src="https://i.postimg.cc/ydRcFtby/avatar.jpg" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white" />
                     <div class="text-left">
                         <div class="font-semibold">@Session["UserName"]</div>
-                        <form action="@Url.Action("Logout", "Auth")" method="post" class="mt-1">
+                        <form action="@Url.Action("Logout", "Account")" method="post" class="mt-1">
                             <button type="submit" class="text-xs text-white bg-orange-600 hover:bg-orange-700 px-2 py-1 rounded-md transition">
                                 Đăng xuất
                             </button>
@@ -99,41 +98,43 @@
     <div class="flex justify-center mb-6">
         <div class="bg-white shadow-sm p-4 rounded-xl flex items-center space-x-4">
             <label for="dateFilter" class="font-semibold text-orange-700">Ngày:</label>
-            <input type="date" id="dateFilter"
-                   class="border border-orange-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+            <input type="text" id="dateFilter"
+                   class="border border-orange-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                   placeholder="dd/mm/yyyy" />
         </div>
     </div>
 
+    <!-- Lưu ý và liên hệ -->
     <div class="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-xl shadow mb-8">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
 
-            <!-- Nội dung chính -->
+            <!-- Cột 1: Nội dung -->
             <div>
                 <h2 class="font-bold text-orange-700 mb-2">📌 Lưu ý:</h2>
                 <ul class="list-disc list-inside text-sm space-y-1 text-gray-700">
-                    <li>
-                        Đặt lịch <strong>CỐ ĐỊNH</strong> liên hệ: <a href="tel:0986390504"
-                                                                      class="text-orange-600 hover:underline">0986.390.504</a>
-                    </li>
+                    <li>Đặt lịch <strong>CỐ ĐỊNH</strong> liên hệ: <a href="tel:0986390504" class="text-orange-600 hover:underline">0986.390.504</a></li>
                     <li>Khung 18h–22h Thứ 2 - thứ 6 <strong>100k/1h</strong> (CỐ ĐỊNH).</li>
                     <li>Khung 5h–17h Thứ 2 - thứ 6 hàng tuần giá ưu đãi <strong>49k/1h</strong>.</li>
                     <li>T7–CN: <strong>89k/1h</strong></li>
                 </ul>
             </div>
 
-            <!-- Liên hệ -->
+            <!-- Cột 2: Nút xem lịch đã đặt (canh giữa cột) -->
+            <div class="flex justify-center items-center sm:mt-6">
+                <button onclick="checkLoginBeforeLichDaDat()" class="px-5 py-2 bg-orange-500 text-white rounded-lg shadow hover:bg-orange-600 transition">
+                    Xem lịch đã đặt
+                </button>
+            </div>
+
+            <!-- Cột 3: Liên hệ -->
             <div class="flex flex-col items-center sm:items-end">
                 <span class="text-base font-semibold text-gray-700 mb-2">Liên hệ:</span>
                 <div class="flex gap-5 text-[22px]">
-                    <a href="https://zalo.me/0986390504" target="_blank" title="Zalo"
-                       class="text-blue-500 hover:scale-110 transition"><i class="fas fa-comment-dots"></i></a>
-                    <a href="https://facebook.com/phuthinhbadminton" target="_blank" title="Facebook"
-                       class="text-blue-600 hover:scale-110 transition"><i class="fab fa-facebook"></i></a>
-                    <a href="tel:0986390504" title="Gọi điện" class="text-green-600 hover:scale-110 transition">
-                        <i class="fas fa-phone-alt"></i>
+                    <a href="https://zalo.me/0986390504" target="_blank" title="Zalo" class="hover:scale-110 transition">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/2048px-Icon_of_Zalo.svg.png" alt="Zalo" class="w-6 h-6">
                     </a>
-                    <a href="https://maps.google.com/?q=Phú+Thịnh+Tân+Phú" target="_blank" title="Bản đồ"
-                       class="text-red-500 hover:scale-110 transition"><i class="fas fa-map-marked-alt"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61554189003939" target="_blank" title="Facebook" class="text-blue-600 hover:scale-110 transition"><i class="fab fa-facebook"></i></a>
+                    <a href="tel:0986390504" title="Gọi điện" class="text-green-600 hover:scale-110 transition"><i class="fas fa-phone-alt"></i></a>
                 </div>
             </div>
 
@@ -166,7 +167,7 @@
             <div class="w-4 h-4 bg-orange-500 mr-2 rounded"></div>Đã đặt
         </div>
         <div class="flex items-center">
-            <div class="w-4 h-4 bg-gray-300 mr-2 rounded"></div>Khoá
+            <div class="w-4 h-4 mr-2 rounded" style="background-color: #697a92;"></div>Khoá
         </div>
     </div>
 
@@ -179,22 +180,48 @@
             THEO
         </button>
     </div>
-    <!-- BẢNG GIÁ -->
-    <div class="mt-10 bg-white p-6 rounded-xl shadow-md">
-        <h2 class="text-xl font-bold text-orange-1000 mb-4">💰 BẢNG GIÁ</h2>
-        <img src="/images/banggia.jpg" alt="Bảng giá sân cầu lông"
-             class="mx-auto w-full max-w-[1000px] rounded-lg shadow">
+    <!-- BẢNG GIÁ & BẢN ĐỒ -->
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- BẢNG GIÁ -->
+        <div class="bg-white p-6 rounded-xl shadow-md h-full flex flex-col justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-orange-1000 mb-4">💰 BẢNG GIÁ</h2>
+                <img src="https://i.postimg.cc/Y0wg88cK/BangGia.jpg"
+                     alt="Bảng giá sân cầu lông"
+                     class="mx-auto w-full h-auto rounded-lg shadow aspect-[4/3]" />
+            </div>
+        </div>
+
+        <!-- BẢN ĐỒ -->
+        <div class="bg-white p-6 rounded-xl shadow-md h-full flex flex-col justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-orange-1000 mb-4">📍 VỊ TRÍ SÂN</h2>
+                <p class="text-sm text-gray-600 mb-2">Địa chỉ: 23C Lũy Bán Bích, P. Tân Thới Hoà, Q. Tân Phú, TP. HCM</p>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.6798813260225!2d106.62997471139286!3d10.759135989344326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752e83238db64b%3A0x89324bb909b8be7f!2zMjNDIMSQLiBMxal5IELDoW4gQsOtY2gsIFTDom4gVGjhu5tpIEhvw6AsIFTDom4gUGjDuiwgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1752052968529!5m2!1svi!2s"
+                        class="mx-auto w-full h-auto rounded-lg shadow aspect-[4/3]"
+                        style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
     </div>
+
 
     <!-- HÌNH ẢNH SÂN -->
     <div class="mt-8 bg-white p-6 rounded-xl shadow-md">
         <h2 class="text-xl font-bold text-orange-600 mb-4">📸 HÌNH ẢNH SÂN</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <img src="/images/HINH SAN MOI/z5652417936781_7d2325a562c3b0d75e2625e2f9b15a81.jpg" alt=""
+            <img src="https://i.postimg.cc/yxSQ3LFM/z5892697839734-78e20c41587f52f66926423b98e758fe.jpg" alt=""
                  class="rounded-lg shadow-md">
-            <img src="/images/HINH SAN MOI/z5810384463047_03a04349a478f85388d3d305d6ba73ba.jpg" alt=""
+            <img src="https://i.postimg.cc/fknHcYCJ/z5875269176415-b5599643746c7400d64dc1a51b6ff131.jpg" alt=""
                  class="rounded-lg shadow-md">
-            <img src="/images/HINH SAN MOI/z5791261379573_d00c293bee958a5dc7fb55c0d7988453.jpg" alt=""
+            <img src="https://i.postimg.cc/T2zG7SHW/z6084745560701-2de1369d528e8b6d4f2d224ee2db56c2.jpg" alt=""
+                 class="rounded-lg shadow-md">
+            <img src="https://i.postimg.cc/pVhRBxkH/z6132729112262-f79cb5895fff19dabb17d546078fb475.jpg" alt=""
+                 class="rounded-lg shadow-md">
+            <img src="https://i.postimg.cc/pLZHddVD/z6545373310697-aa44ab9291147bd15f6866aad7f4d581.jpg" alt=""
+                 class="rounded-lg shadow-md">
+            <img src="https://i.postimg.cc/yYGRbVCy/z5791261333458-b650f5923f5e2a56c2b362a68fa729ec.jpg" alt=""
                  class="rounded-lg shadow-md">
         </div>
     </div>
@@ -206,6 +233,28 @@
 </div>
 
 @section scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            flatpickr("#dateFilter", {
+                dateFormat: "d/m/Y",
+                locale: flatpickr.l10ns.vi
+            });
+        });
+    </script>
+
+    <script>
+    function checkLoginBeforeLichDaDat() {
+        const isLoggedIn = '@(Session["UserID"] != null ? "true" : "false")';
+        if (isLoggedIn === "true") {
+            window.location.href = '@Url.Action("LichDaDat", "Booking")';
+        } else {
+            const msg = "Bạn cần đăng nhập để xem lịch sân đã đặt.\nTài khoản và mật khẩu chính là tên và số điện thoại bạn dùng khi đặt sân.\n Nếu cần hỗ trợ vui lòng liên hệ zalo tel:0986390504";
+            if (confirm(msg)) {
+                openPopup(); // Gọi hàm openPopup thay vì chuyển hướng
+            }
+        }
+    }
+    </script>
     <script>
         const timePoints = Array.from({ length: 38 }, (_, i) => 5 + i * 0.5);
         const timeSlots = timePoints;
@@ -268,7 +317,7 @@
                     if (cartItems.find(i => i.date === date && i.court === courtName && i.time === time)) {
                         cell.classList.remove('available');
                         cell.classList.add('booked');
-                        cell.innerHTML = '✅';
+                        cell.innerHTML = '';
                     }
 
                     row.appendChild(cell);
@@ -345,7 +394,7 @@
                         if (cell) {
                             cell.classList.remove('available');
                             cell.classList.add(item.status);
-                            cell.innerHTML = item.status === 'booked' ? '✅' : '';
+                            cell.innerHTML = item.status === 'booked' ? '' : '';
                         }
                     });
 
@@ -357,7 +406,7 @@
                         if (cell && !cell.classList.contains('locked')) {
                             cell.classList.remove('available');
                             cell.classList.add('booked');
-                            cell.innerHTML = '✅';
+                            cell.innerHTML = '';
                         }
                     });
 
@@ -410,7 +459,7 @@
                             cartItems.push({ key, date, court, time: t });
                             c.classList.remove('available');
                             c.classList.add('booked');
-                            c.innerHTML = '✅';
+                            c.innerHTML = '';
                             c.dataset.manual = true;
                         }
                     }
@@ -433,14 +482,29 @@
                 cartItems.push({ key, date, court, time });
                 cell.classList.remove('available');
                 cell.classList.add('booked');
-                cell.innerHTML = '✅';
+                cell.innerHTML = '';
                 cell.dataset.manual = true;
             }
 
             renderCart();
         }
+        //===============================================================================
+        function toYMD(dateStr) {
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return '';
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+        function parseDate(value) {
+            if (value.includes('/')) {
+                // dd/mm/yyyy -> yyyy-mm-dd
+                const [d, m, y] = value.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            } else {
+                // giả sử đã là yyyy-mm-dd
+                return value;
+            }
+        }
 
-        //
         function renderCart() {
             const cartDiv = document.getElementById('cart-display');
             const cartList = document.getElementById('cartList');
@@ -477,8 +541,8 @@
                         i++;
                     }
                     const fmt = t => `${Math.floor(t)}:${t % 1 === 0 ? '00' : '30'}`;
-                    const weekday = new Date(date).toLocaleDateString('vi-VN', { weekday: 'long' });
-                    const formattedDate = new Date(date).toLocaleDateString('vi-VN');
+                    const weekday = new Date(toYMD(date)).toLocaleDateString('vi-VN', { weekday: 'long' });
+                    const formattedDate = new Date(toYMD(date)).toLocaleDateString('vi-VN');
                     lines.push(`🔸 ${weekday}, ${formattedDate} - ${court} - ${fmt(start)} → ${fmt(end + 0.5)}`);
                     i++;
                 }
@@ -486,22 +550,38 @@
 
             cartList.innerHTML = lines.map(line => `<li>${line}</li>`).join('');
         }
+        // chuẩn hóa về 0h để so sánh đúng ngày:
+        function getDateOnly(d) {
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        }
 
-        //khóa sân đã qua
+        // Khóa ô đã qua
         function lockPastTimeSlots() {
-            const selectedDate = document.getElementById('dateFilter').value;
-            const today = new Date().toISOString().split('T')[0];
+            const selectedRaw = document.getElementById('dateFilter').value;
+
+            let selectedDate;
+            if (selectedRaw.includes('/')) {
+                const [d, m, y] = selectedRaw.split('/');
+                selectedDate = new Date(`${y}-${m}-${d}T00:00:00`);
+            } else {
+                selectedDate = new Date(selectedRaw);
+            }
+
             const now = new Date();
+            const today = getDateOnly(now);
+            const selected = getDateOnly(selectedDate);
             const nowHour = now.getHours() + now.getMinutes() / 60;
 
             document.querySelectorAll('#courtTableBody tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
                 for (let i = 1; i < cells.length; i++) {
                     const cell = cells[i];
-                    const hour = timeSlots[i - 1];
+                    const time = timeSlots[i - 1];
+                    const [h, m] = formatHour(time).split(':').map(Number);
+                    const slotHour = h + m / 60;
 
-                    if (selectedDate < today || (selectedDate === today && hour <= nowHour)) {
-                        if (!cell.classList.contains('booked')) {  // ⚠️ đừng khóa nếu đã đặt
+                    if (selected < today || (selected.getTime() === today.getTime() && slotHour <= nowHour)) {
+                        if (!cell.classList.contains('booked')) {
                             cell.classList.remove('available', 'booked');
                             cell.classList.add('locked');
                             cell.innerHTML = '';
@@ -510,10 +590,15 @@
                 }
             });
         }
+
         // Khởi động
         window.onload = () => {
             const datePicker = document.getElementById('dateFilter');
-            datePicker.value = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            datePicker.value = `${dd}/${mm}/${yyyy}`;
 
             generateTimeHeaders();
             generateCourtRows();
@@ -584,7 +669,7 @@
 
 
         function openPopup() {
-            const url = `/Auth/Login`;
+            const url = `/Account/Login`;
             const w = 460, h = 580;
             const left = (screen.width - w) / 2;
             const top = (screen.height - h) / 2;

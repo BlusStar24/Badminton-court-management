@@ -18,6 +18,7 @@
         <label class="font-semibold">Đến ngày:</label>
         <input type="date" name="to" value="@Request["to"]"
                class="border border-gray-300 rounded px-3 py-2" />
+        
     </div>
     <button type="submit"
             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -37,6 +38,8 @@
                 <th class="px-4 py-3 text-left">📋 Chi tiết</th>
                 <th class="px-4 py-3 text-center">🗑️</th>
                 <th class="px-4 py-3 text-left">🖼️ Minh chứng</th>
+                <th class="px-4 py-3 text-center">✔️ Xác nhận</th>
+               
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
@@ -51,18 +54,20 @@
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
                             @foreach (var ct in tb.ChiTiet)
                             {
+                                var parsedDate = DateTime.TryParse(ct.date, out var d) ? d.ToString("dd/MM/yyyy") : ct.date;
                                 <li>
-                                    <strong>@ct.court</strong> – @DateTime.Parse(ct.date).ToString("dd/MM/yyyy") @ct.start → @ct.end:
-                                    <strong>@ct.price.ToString("N0") đ</strong>
+                                    <strong>@ct.court</strong> – @parsedDate @ct.start → @ct.end:
+                                    <strong>@(ct.price.ToString("N0")) đ</strong>
                                 </li>
                             }
+
                         </ul>
                     </td>
                     <td class="px-4 py-2 text-center">
-                        @using (Html.BeginForm("XoaThongBao", "Adminquanly", FormMethod.Post))
+                        @using (Html.BeginForm("XoaThongBao", "AdminQuanly", FormMethod.Post))
                         {
-                            @Html.Hidden("SoDienThoai", tb.SoDienThoai)
-                            @Html.Hidden("NgayTao", tb.NgayTao)
+                            @Html.AntiForgeryToken() 
+                            @Html.Hidden("id", tb.Id)
                             <button type="submit"
                                     onclick="return confirm('Xác nhận xóa thông báo này?');"
                                     class="text-red-600 hover:underline">
@@ -73,59 +78,55 @@
                     <td class="px-4 py-2">
                         @if (!string.IsNullOrEmpty(tb.MinhChungChuyenKhoan))
                         {
-                            var fileName = System.IO.Path.GetFileName(tb.MinhChungChuyenKhoan);
-                            <img src="@Url.Action("HienThiMinhChung", "AdminQuanLy", new { file = fileName })" class="w-24 h-24 object-contain border" />
+                            <img src="@tb.MinhChungChuyenKhoan" class="w-24 h-24 object-contain border" />
                         }
                         else
                         {
                             <span class="italic text-gray-400">Không có</span>
                         }
                     </td>
+                    <td class="px-4 py-2 text-center">
+                        @if (tb.IsConfirmed == "Chờ xác nhận")
+                        {
+                            if (tb.BookingId.HasValue)
+                            {
+                                <div class="flex gap-2 justify-center">
+                                    @using (Html.BeginForm("XacNhanBooking", "AdminQuanly", FormMethod.Post))
+                                    {
+                                        @Html.Hidden("id", tb.BookingId.Value)
+                                        <button type="submit" class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
+                                            Xác nhận
+                                        </button>
+                                    }
+                                    @using (Html.BeginForm("TuChoiBooking", "AdminQuanly", FormMethod.Post))
+                                    {
+                                        @Html.Hidden("id", tb.BookingId.Value)
+                                        <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
+                                            Từ chối
+                                        </button>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="italic text-yellow-500">Chưa có BookingId</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="font-semibold @(
+            tb.IsConfirmed == "Đã xác nhận" ? "text-green-600" :
+            tb.IsConfirmed == "Đã từ chối" ? "text-red-600" :
+            "text-yellow-600")">
+                                @tb.IsConfirmed
+                            </span>
+                        }
+                    </td>
+
+
                 </tr>
             }
         </tbody>
     </table>
 </div>
 
-@section scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.scrollTo(0, document.body.scrollHeight);
-
-            // Hỏi quyền hiển thị thông báo trình duyệt
-            if (Notification.permission !== "granted") {
-                Notification.requestPermission().then(function (permission) {
-                    console.log("Permission:", permission);
-                });
-            }
-        });
-
-        let countCu = 0;
-
-        function showPopup(title, body) {
-            if (Notification.permission === "granted") {
-                new Notification(title, {
-                    body: body,
-                    icon: "https://cdn-icons-png.flaticon.com/512/726/726448.png" // biểu tượng đặt sân
-                });
-            } else {
-                console.log("Notification chưa được cấp quyền.");
-            }
-        }
-
-        async function checkNewBooking() {
-            try {
-                const res = await fetch('/AdminQuanLy/DemThongBaoMoi');
-                const data = await res.json();
-                if (data.count > countCu) {
-                    showPopup("📢 Có khách vừa đặt sân!", "Kiểm tra trong mục Thông báo.");
-                    countCu = data.count;
-                }
-            } catch (e) {
-                console.error("Lỗi check thông báo:", e);
-            }
-        }
-
-        setInterval(checkNewBooking, 10000); // Mỗi 10 giây
-    </script>
-}

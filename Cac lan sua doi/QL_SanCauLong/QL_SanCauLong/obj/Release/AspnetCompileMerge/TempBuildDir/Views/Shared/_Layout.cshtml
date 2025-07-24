@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Admin Phú Thịnh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <link rel="icon" href="~/Content/favicon.ico" type="image/x-icon" />
+    <style>
+        #bookingTable td {
+            min-width: 100px;
+            height: 80px;
+            word-wrap: break-word;
+            text-align: center;
+        }
+
+        #bookingTable {
+            table-layout: fixed;
+        }
+
+        #booking .overflow-x-auto {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .court-even {
+            background-color: #e0f7fa;
+        }
+
+        .court-odd {
+            background-color: #fff3e0;
+        }
+
+        .custom-cell {
+            min-width: 120px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex min-h-screen">
+        @Html.Partial("_Sidebar") <!-- Menu bên trái -->
+        <main class="flex-1 p-6 space-y-8 ml-64">
+            @RenderBody() <!-- Nội dung trang -->
+        </main>
+
+    </div>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

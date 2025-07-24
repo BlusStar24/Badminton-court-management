@@ -18,7 +18,7 @@
                     <option value="month">Theo tháng</option>
                 </select>
 
-                <input type="date" id="filterDate" class="border rounded px-2 py-1 text-sm hidden" />
+                <input type="date" id="filterDate" name="dob" class="form-control border rounded px-2 py-1 text-sm hidden" />
                 <input type="month" id="filterMonth" class="border rounded px-2 py-1 text-sm hidden" />
 
                 <select id="filterPaid" class="border rounded px-2 py-1 text-sm">
@@ -34,7 +34,7 @@
                         <th class="border p-2">Tên khách</th>
                         <th class="border p-2">Ngày</th>
                         <th class="border p-2">Tổng</th>
-                        <th class="border p-2">✔</th>
+                        <th class="border p-2">Trạng Thái</th>
                         <th class="border p-2">Xem</th>
                     </tr>
                 </thead>
@@ -214,7 +214,10 @@
                     `;
 
                         tbody.appendChild(row);
-                    });
+                    })
+                        .catch(err => {
+                            alert("Lỗi khi lấy chi tiết: " + err.message);
+                        });    ;
                 });
         }
 
@@ -244,6 +247,7 @@
                     alert(res.message);
                     taiDanhSach(document.getElementById("filterPaid").value || null);
                 });
+
         };
 
         document.getElementById("btnXoa").onclick = () => {

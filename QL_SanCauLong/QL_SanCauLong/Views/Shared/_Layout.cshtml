@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -7,11 +8,14 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-    <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <link rel="icon" href="~/Content/favicon.ico" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://unpkg.com/xlsx-style@0.8.13/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
     <style>
         #bookingTable td {
             min-width: 100px;
@@ -41,16 +45,111 @@
             min-width: 120px;
             height: 100px;
         }
+
+        .collapsed #sidebar {
+            width: 4rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .collapsed .nav-label {
+            display: none;
+        }
+
+        .collapsed main {
+            margin-left: 4rem !important;
+        }
     </style>
+    @RenderSection("styles", required: false)
 </head>
 <body class="bg-gray-100 font-sans">
     <div class="flex min-h-screen">
         @Html.Partial("_Sidebar") <!-- Menu bên trái -->
-        <main class="flex-1 p-6 space-y-8 ml-64">
+        <main class="flex-1 p-6 space-y-8 ml-64 transition-all duration-300">
             @RenderBody() <!-- Nội dung trang -->
         </main>
 
     </div>
     @RenderSection("scripts", required: false)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.scrollTo(0, document.body.scrollHeight);
+
+            // Yêu cầu quyền hiển thị thông báo
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(function (permission) {
+                    console.log("Đã cấp quyền:", permission); // "granted" mới dùng được
+                });
+            }
+        });
+
+        // Âm báo online
+        const sound = new Audio("https://assets.mixkit.co/active_storage/sfx/333/333-preview.mp3");
+
+
+        function showPopup(title, body) {
+            if (Notification.permission === "granted") {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: "https://cdn-icons-png.flaticon.com/512/726/726448.png"
+                });
+
+                // ✅ Khi click vào thông báo, chuyển tới trang Thông báo
+                notification.onclick = function (event) {
+                    event.preventDefault(); // ngăn mở tab mới
+                    window.focus();
+                    window.location.href = "/AdminQuanLy/thongbaotuWEB";
+                };
+            }
+        }
+
+
+        async function checkNewBooking() {
+            try {
+                const res = await fetch('/AdminQuanLy/DemThongBaoMoi');
+                const data = await res.json();
+
+                if (firstRun) {
+                    countCu = data.count;
+                    localStorage.setItem("thongBaoCount", countCu);
+                    firstRun = false;
+                    return;
+                }
+
+                if (data.count > countCu) {
+                    // Thông báo mới → hiện popup và reload nếu đang ở đúng trang
+                    showPopup("📢 Có khách vừa đặt sân!", "Kiểm tra trong mục Thông báo.");
+                    sound.play();
+
+                    countCu = data.count;
+                    localStorage.setItem("thongBaoCount", countCu);
+
+                    // ✅ Chỉ reload nếu đang ở trang thông báo
+                    if (window.location.pathname.toLowerCase().includes("/adminquanly/thongbaotuweb")) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000); // Chờ 2s để người dùng thấy popup rồi mới reload
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi check thông báo:", e);
+            }
+        }
+
+        let firstRun = true;
+        let countCu = 0;
+        setInterval(checkNewBooking, 5000); // Check mỗi 5 giây
+        checkNewBooking();
+    </script>
+    <script>
+        const btn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+
+        btn.addEventListener('click', () => {
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-16');
+        });
+    </script>
+
 </body>
 </html>

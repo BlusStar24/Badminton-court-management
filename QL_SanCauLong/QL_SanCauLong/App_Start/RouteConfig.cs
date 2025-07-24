@@ -20,14 +20,7 @@ namespace QL_SanCauLong
                 defaults: new { controller = "Booking", action = "ViewDatSan" }
             );
 
-            // Các route còn lại
-            routes.MapRoute(
-                name: "AdminQuanLy",
-                url: "AdminQuanLy/{action}/{id}",
-                defaults: new { controller = "AdminQuanLy", action = "Booking", id = UrlParameter.Optional }
-            );
-
-            routes.MapRoute(
+                routes.MapRoute(
                 name: "Other",
                 url: "{controller}/{action}/{id}",
                 defaults: new { id = UrlParameter.Optional }

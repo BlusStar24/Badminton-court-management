@@ -79,6 +79,9 @@
                 <div class="mb-4">
                     <div class="text-blue-700 font-semibold text-base mb-2">🛒 Sản phẩm đã chọn:</div>
                     <div id="gioHang" class="space-y-2"></div>
+
+                    <div class="text-blue-700 font-semibold text-base mt-4 mb-2">📦 Sản phẩm chưa thanh toán:</div>
+                    <div id="sanPhamDaChon" class="space-y-2"></div>
                 </div>
 
                 <!-- Lịch sân chưa thanh toán -->
@@ -187,44 +190,46 @@
         const tabContainer = document.getElementById("tabHoaDon");
         const gioHangDiv = document.getElementById("gioHang");
         //==================================================================================================================================
-        function renderSanPhamChuaThanhToan() {
-            const name = hoaDons[hoaDonHienTai].tenKhach?.trim();
-            const gioHangDiv = document.getElementById("gioHang");
+        function renderSanPhamChuaThanhToan(name = null) {
+            name = name ?? hoaDons[hoaDonHienTai].tenKhach;
             if (!name) return;
 
             fetch("/QuanLyBanHang/GetSanPhamChuaThanhToan?name=" + encodeURIComponent(name))
                 .then(res => res.json())
                 .then(res => {
-                    console.log("👉 Kết quả sản phẩm chưa thanh toán:", res); // <- thêm dòng này
+                    const sanPhamList = document.getElementById("sanPhamDaChon");
+                    if (!sanPhamList) return; // nếu không tồn tại thì dừng
+                    sanPhamList.innerHTML = "";
+
 
                     if (res.success && res.data.length > 0) {
                         res.data.forEach(sp => {
-                            const index = hoaDons[hoaDonHienTai].gioHang.findIndex(x => x.id == sp.item_id);
-                            if (index >= 0) {
-                                hoaDons[hoaDonHienTai].gioHang[index].quantity = (hoaDons[hoaDonHienTai].gioHang[index].quantity || 1) + 1;
-                            } else {
-                                hoaDons[hoaDonHienTai].gioHang.push({
-                                    id: sp.item_id,
-                                    name: sp.name,
-                                    price: sp.price,
-                                    quantity: 1
-                                });
-                            }
+                            const div = document.createElement("div");
+                            div.className = "flex items-center bg-white p-2 rounded shadow border";
+                            div.innerHTML = `
+                        <label class="flex items-center space-x-2 w-full">
+                            <input type="checkbox" class="check-sanpham" data-id="${sp.item_id}" data-price="${sp.price}" checked />
+                            <span class="text-sm text-gray-800 flex-1">${sp.name}</span>
+                            <span class="font-semibold text-blue-600 whitespace-nowrap">${sp.price.toLocaleString()} đ</span>
+                            <span class="ml-2 text-red-500 font-bold cursor-pointer btn-xoa-sp" data-id="${sp.item_id}">×</span>
+                        </label>`;
+                            sanPhamList.appendChild(div);
                         });
-                        renderGioHang();
+
+                        updateCheckboxEvents();
                         updateTotal();
                     }
                 });
         }
+
         //==================================================================================================================================
-        function renderLichChuaThanhToan() {
-            const name = hoaDons[hoaDonHienTai].tenKhach?.trim();
+        function renderLichChuaThanhToan(name = null) {
+            name = name ?? hoaDons[hoaDonHienTai].tenKhach?.trim();
+            if (!name) return;
             const bookingList = document.getElementById("bookingList");
             bookingList.innerHTML = "";
 
-            if (!name) return;
-
-            fetch("/QuanLyBanHang/GetLichChuaThanhToan?name=" + encodeURIComponent(name))
+                    fetch("/QuanLyBanHang/GetLichChuaThanhToan?name=" + encodeURIComponent(name))
                 .then(res => res.json())
                 .then(res => {
                     if (res.success && res.data.length > 0) {
@@ -467,11 +472,20 @@
             const bookingEls = document.querySelectorAll(".check-booking");
 
             const item_ids = [], quantities = [], item_is_paid = [];
+
             sanPhamEls.forEach(cb => {
-                item_ids.push(cb.getAttribute("data-id"));
-                const sp = hoaDons[hoaDonHienTai].gioHang.find(x => x.id == cb.getAttribute("data-id"));
-                quantities.push(sp.quantity);
-                item_is_paid.push(cb.checked); // dù có check hay không vẫn đẩy lên
+                const id = parseInt(cb.getAttribute("data-id"));
+                item_ids.push(id);
+
+                const sp = hoaDons[hoaDonHienTai]?.gioHang?.find(x => x.id === id);
+                if (sp && sp.quantity != null) {
+                    quantities.push(sp.quantity);
+                } else {
+                    quantities.push(1); // fallback an toàn
+                }
+
+
+                item_is_paid.push(cb.checked);
             });
 
             const booking_ids = [], booking_is_paid = [];
@@ -482,51 +496,69 @@
                 }
             });
 
-            // Kiểm tra nếu không có gì được check
-            if (item_ids.length === 0 && bookingEls.length === 0) {
+            if (item_ids.length === 0 && booking_ids.length === 0) {
                 alert("Không có sản phẩm hay lịch sân nào trong hóa đơn.");
                 return;
             }
+            console.log("🧾 Dữ liệu gửi lên server:", {
+                name: hoaDons[hoaDonHienTai]?.tenKhach || "",
+                phone: "",
+                item_ids,
+                quantities,
+                item_is_paid,
+                booking_ids,
+                booking_is_paid,
+                payment_method: document.getElementById("paymentMethod").value
+            });
 
             fetch('/QuanLyBanHang/LuuHoaDon', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: hoaDons[hoaDonHienTai].tenKhach,
+                    name: hoaDons[hoaDonHienTai]?.tenKhach || "",
                     phone: "",
-                    item_ids,
-                    quantities,
-                    item_is_paid,
-                    booking_ids,
-                    booking_is_paid,
+                    item_ids: item_ids || [],
+                    quantities: quantities || [],
+                    item_is_paid: item_is_paid || [],
+                    booking_ids: booking_ids || [],
+                    booking_is_paid: booking_is_paid || [],
                     payment_method: document.getElementById("paymentMethod").value
                 })
+
             })
+
                 .then(res => res.json())
                 .then(res => {
+                    console.log("📥 Kết quả server trả về:", res);
                     alert(res.message);
-                    if (res.success) {
-                        const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
+                    if (!res.success) return;
 
-                        if (hoaDonHienTai === 1) {
-                            hoaDons[1] = { tenKhach: "", gioHang: [] };
-                            document.getElementById("khachHang").value = "";
-                            document.getElementById("bookingList").innerHTML = "";
-                            renderGioHang();
-                            updateTotal();
-                            const tab1 = document.querySelector(`#tabHoaDon .tab[data-id="1"]`);
-                            if (tab1) tab1.querySelector("span").innerText = "Hóa đơn 1";
+                    const tab = document.querySelector(`#tabHoaDon .tab[data-id="${hoaDonHienTai}"]`);
+
+                    if (hoaDonHienTai === 1) {
+                        const tenKhach = hoaDons[1].tenKhach; // lấy trước khi reset
+
+                        renderLichChuaThanhToan(tenKhach); // truyền name
+                        renderSanPhamChuaThanhToan(tenKhach); // truyền name
+
+                        hoaDons[1] = { tenKhach: "", gioHang: [] };
+                        document.getElementById("khachHang").value = "";
+                        document.getElementById("bookingList").innerHTML = "";
+                        renderGioHang();
+                        updateTotal();
+
+                        const tab1 = document.querySelector(`#tabHoaDon .tab[data-id="1"]`);
+                        if (tab1) tab1.querySelector("span").innerText = "Hóa đơn 1";
+                    } else {
+                        delete hoaDons[hoaDonHienTai];
+                        if (tab) tab.remove();
+                        const remaining = Object.keys(hoaDons);
+                        if (remaining.length > 0) {
+                            switchTab(parseInt(remaining[0]));
                         } else {
-                            delete hoaDons[hoaDonHienTai];
-                            if (tab) tab.remove();
-                            const remaining = Object.keys(hoaDons);
-                            if (remaining.length > 0) {
-                                switchTab(parseInt(remaining[0]));
-                            } else {
-                                soHoaDon++;
-                                hoaDons[soHoaDon] = { tenKhach: "", gioHang: [] };
-                                switchTab(soHoaDon);
-                            }
+                            soHoaDon++;
+                            hoaDons[soHoaDon] = { tenKhach: "", gioHang: [] };
+                            switchTab(soHoaDon);
                         }
                     }
                 });

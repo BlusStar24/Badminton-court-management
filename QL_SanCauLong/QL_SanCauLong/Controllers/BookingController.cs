@@ -2,38 +2,137 @@
 using QL_SanCauLong.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
-
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Data.Entity;
+using System.Text.RegularExpressions;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions; 
 namespace QL_SanCauLong.Controllers
 {
     public class BookingController : Controller
     {
-        QuanLySanCauLongdbEntities db = new QuanLySanCauLongdbEntities();
+        QuanLySanCauLongEntities3 db = new QuanLySanCauLongEntities3();
         // GET: Booking form (Admin thêm lịch từ Zalo, Facebook)
+        [AllowAnonymous]
         public ActionResult ViewDatSan(string date)
         {
-
             DateTime selectedDate;
             if (!DateTime.TryParse(date, out selectedDate))
                 selectedDate = DateTime.Today;
 
+            db.Database.CommandTimeout = 60; // Tăng thời gian chờ truy vấn
+
             var bookings = db.bookings
-                .Where(b => b.date == selectedDate)
+                .Where(b => b.date.Year == selectedDate.Year &&
+                            b.date.Month == selectedDate.Month &&
+                            b.date.Day == selectedDate.Day)
+                .Select(b => new
+                {
+                    b.date,
+                    b.court_id,
+                    b.start_time
+                })
                 .ToList()
                 .Select(b => new
                 {
-                    date = b.date.ToString("yyyy-MM-dd"), // thêm dòng này
+                    date = b.date.ToString("yyyy-MM-dd"),
                     court = "Sân " + b.court_id,
-                    time = b.start_time.Hours + ":" + (b.start_time.Minutes == 0 ? "00" : b.start_time.Minutes.ToString("00")),
+                    time = b.start_time.ToString(@"hh\:mm"),
                     status = "booked"
-                }).ToList();
+                })
+                .ToList();
 
             ViewBag.BookingData = bookings;
             return View();
         }
+
+        //================================================================================================================================
+
+        public ActionResult LichDaDat()
+        {
+            if (Session["UserID"] == null)
+            {
+                TempData["LoginMessage"] = "Bạn cần đăng nhập để xem lịch sân đã đặt.\nTài khoản và mật khẩu chính là tên và số điện thoại bạn dùng khi đặt sân.";
+                return RedirectToAction("ViewDatSan", "Booking", new { loginWarn = true });
+            }
+
+            int customerId = (int)Session["UserID"];
+
+            // Lấy các booking còn tồn tại
+            var lichDaDat = db.bookings
+                .Where(b => b.customer_id == customerId)
+                .OrderByDescending(b => b.created_at)
+                .Select(b => new
+                {
+                    b.id,
+                    b.date,
+                    b.start_time,
+                    b.end_time,
+                    court = b.court.name,
+                    b.price,
+                    b.type,
+                    b.is_paid,
+                    b.payment_method,
+                    invoice_id = b.invoice_id,
+                    b.is_confirmed
+                })
+                .ToList()
+                .Select(b => new BookingHoaDonKhachModel
+                {
+                    Id = b.id,
+                    Date = b.date.ToString("yyyy-MM-dd"),
+                    TimeRange = $"{b.start_time:hh\\:mm} - {b.end_time:hh\\:mm}",
+                    Court = b.court,
+                    Price = b.price,
+                    Type = b.type,
+                    IsPaid = (b.is_paid ?? false) ? "Đã thanh toán" : "Chưa thanh toán",
+                    PaymentMethod = (b.payment_method == "Nợ" ? "Tiền mặt" : b.payment_method),
+                    InvoiceId = b.invoice_id,
+                    IsConfirmed = (b.is_confirmed == true)
+                        ? "✔️ Đã xác nhận"
+                        : (b.is_confirmed == null
+                            ? "⏳ Chờ xác nhận"
+                            : "❌ Đã từ chối")
+                })
+                .ToList();
+            var courtDict = db.courts.ToDictionary(c => c.id, c => c.name);
+
+            // Lấy các booking đã bị từ chối
+            var daTuChoi = db.rejected_bookings
+                .Where(b => b.customer_id == customerId)
+                .OrderByDescending(b => b.created_at)
+                .ToList()
+                .Select(b => new BookingHoaDonKhachModel
+                {
+                    Id = b.booking_id,
+                    Date = b.date.ToString("yyyy-MM-dd"),
+                    TimeRange = $"{b.start_time:hh\\:mm} - {b.end_time:hh\\:mm}",
+
+                    // Fix for CS1503: Convert nullable int (int?) to int using the null-coalescing operator or explicit cast.
+                    Court = courtDict.ContainsKey(b.court_id ?? 0) ? courtDict[b.court_id ?? 0] : "Không rõ",
+                    Price = b.price,
+                    Type = "vãng lai",
+                    IsPaid = "Đã từ chối",
+                    PaymentMethod = "Không",
+                    InvoiceId = null,
+                    IsConfirmed = "❌ Đã từ chối"
+                })
+                .ToList();
+
+            lichDaDat.AddRange(daTuChoi);
+
+            return View(lichDaDat);
+        }
+
+
         //================================================================================================================================
         // GET: Booking form (Khách hàng đặt sân)
         public JsonResult GetTrangThai(string ngay)
@@ -42,8 +141,18 @@ namespace QL_SanCauLong.Controllers
             if (!DateTime.TryParse(ngay, out selectedDate))
                 selectedDate = DateTime.Today;
 
+            db.Database.CommandTimeout = 60;
+
             var bookings = db.bookings
-                .Where(b => b.date == selectedDate)
+                .Where(b => b.date.Year == selectedDate.Year &&
+                            b.date.Month == selectedDate.Month &&
+                            b.date.Day == selectedDate.Day)
+                .Select(b => new
+                {
+                    b.court_id,
+                    b.start_time,
+                    b.end_time
+                })
                 .ToList();
 
             var result = new List<object>();
@@ -66,6 +175,7 @@ namespace QL_SanCauLong.Controllers
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
+
         //================================================================================================================================
         // GET: Booking form (Hiện thị thông tin cho khách hàng đặt sân)
         [HttpPost]
@@ -96,18 +206,20 @@ namespace QL_SanCauLong.Controllers
                 double startHour = start.TotalHours;
                 double endHour = end.TotalHours;
 
+                var rules = db.price_rules
+                  .Where(r => r.day_of_week == day && r.type == loai)
+                  .ToList();
+
                 for (double hour = startHour; hour < endHour; hour += 0.5)
                 {
                     int hourInt = (int)Math.Floor(hour);
 
-                    var rule = db.price_rules.FirstOrDefault(r =>
-                        r.day_of_week == day &&
+                    var rule = rules.FirstOrDefault(r =>
                         r.start_hour <= hourInt &&
-                        r.end_hour > hourInt &&
-                        r.type == loai);
+                        r.end_hour > hourInt);
 
                     decimal pricePerHour = rule?.price_per_hour ?? 0;
-                    total += pricePerHour * 0.5m; // tính theo nửa giờ
+                    total += pricePerHour * 0.5m;
                 }
 
                 b.price = (long)total;
@@ -115,14 +227,58 @@ namespace QL_SanCauLong.Controllers
 
             return View("ThanhToan", bookings);
         }
+
+        //===============================================================================================================================
+        public static class CloudinaryHelper
+        {
+            private static readonly Cloudinary _cloudinary;
+
+            static CloudinaryHelper()
+            {
+                Account account = new Account(
+                    "dbwdohabb",                // cloud name
+                    "633735185578915",               // API key
+                    "7tP4ecnvlixKUb_0GZj0BtRAh44"    // API secret
+                );
+                _cloudinary = new Cloudinary(account);
+            }
+
+            public static string UploadImage(HttpPostedFileBase file)
+            {
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, file.InputStream),
+                    Folder = "phuthinh",
+                    UseFilename = true,
+                    UniqueFilename = true,
+                    Overwrite = false
+                };
+
+                var uploadResult = _cloudinary.Upload(uploadParams);
+                return uploadResult.SecureUrl?.ToString();
+            }
+        }
         //================================================================================================================================
-        // lưu lịch đặt sân của customer vào DB 
         [HttpPost]
+        [ValidateAntiForgeryToken] // Yêu cầu CSRF token
         public JsonResult LuuDatSan(List<BookingInput> bookings, string HoTen, string SoDienThoai, string payment_method, HttpPostedFileBase payment_image)
         {
-            using (var transaction = db.Database.BeginTransaction())
+            try
             {
-                try
+                if (bookings == null || !bookings.Any())
+                {
+                    return Json(new { success = false, message = "Không có thông tin đặt sân được cung cấp." });
+                }
+
+                // Kiểm tra định dạng số điện thoại
+                if (!Regex.IsMatch(SoDienThoai, @"^[0-9]{10,11}$"))
+                {
+                    return Json(new { success = false, message = "Số điện thoại không hợp lệ." });
+                }
+
+
+                // Tiếp tục logic hiện tại của bạn
+                using (var transaction = db.Database.BeginTransaction())
                 {
                     var samePhone = db.customers.FirstOrDefault(c => c.phone == SoDienThoai);
                     if (samePhone != null && samePhone.name != HoTen)
@@ -148,7 +304,7 @@ namespace QL_SanCauLong.Controllers
                     var customer = db.customers.FirstOrDefault(c => c.phone == SoDienThoai);
                     if (customer == null)
                     {
-                        customer = new customers
+                        customer = new customer
                         {
                             name = HoTen,
                             phone = SoDienThoai,
@@ -160,36 +316,46 @@ namespace QL_SanCauLong.Controllers
                         db.SaveChanges();
                     }
 
+
                     Session["UserID"] = customer.id;
                     Session["UserName"] = customer.name;
                     Session["UserPhone"] = customer.phone;
 
                     decimal tongTien = 0;
-                    List<bookings> createdBookings = new List<bookings>();
+                    List<booking> createdBookings = new List<booking>();
 
                     foreach (var b in bookings)
                     {
-                        var courtId = db.courts.FirstOrDefault(c => c.name == b.court)?.id ?? 1;
+                        if (!DateTime.TryParse(b.date, out var date) ||
+                            !TimeSpan.TryParse(b.start, out var startTime) ||
+                            !TimeSpan.TryParse(b.end, out var endTime))
+                        {
+                            return Json(new { success = false, message = "Định dạng ngày hoặc giờ không hợp lệ." });
+                        }
 
-                        var booking = new bookings
+                        var court = db.courts.FirstOrDefault(c => c.name == b.court);
+                        var courtId = court?.id ?? 1;
+                        var booking = new booking
                         {
                             customer_id = customer.id,
                             court_id = courtId,
-                            date = DateTime.Parse(b.date),
-                            start_time = TimeSpan.Parse(b.start),
-                            end_time = TimeSpan.Parse(b.end),
+                            date = date,
+                            start_time = startTime,
+                            end_time = endTime,
                             type = "vãng lai",
                             price = b.price,
                             created_at = DateTime.Now,
-                            is_paid = (payment_method == "Chuyển khoản"),
-                            payment_method = payment_method
+                            is_paid = (payment_method != "Tiền mặt"),
+                            payment_method = (payment_method == "Tiền mặt" ? "Nợ" : payment_method),
+                            is_confirmed = null
                         };
 
                         bool trungGio = db.bookings.Any(x =>
                             x.court_id == courtId &&
                             x.date == booking.date &&
-                            x.start_time == booking.start_time &&
-                            x.end_time == booking.end_time);
+                            ((x.start_time <= booking.start_time && x.end_time > booking.start_time) ||
+                             (x.start_time < booking.end_time && x.end_time >= booking.end_time) ||
+                             (x.start_time >= booking.start_time && x.end_time <= booking.end_time)));
 
                         if (!trungGio)
                         {
@@ -200,33 +366,45 @@ namespace QL_SanCauLong.Controllers
                         }
                     }
 
-                    // Xử lý ảnh minh chứng nếu có
                     string imagePath = null;
-                    if (payment_image != null && payment_image.ContentLength > 0)
+                    if (payment_image != null && payment_image.ContentLength > 0 && payment_method == "Chuyển khoản")
                     {
-                        string folder = @"C:\Uploads\Invoices";
-                        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+                        if (payment_image.ContentLength > 32 * 1024 * 1024)
+                        {
+                            return Json(new { success = false, message = "Kích thước ảnh vượt quá 32MB. Vui lòng chọn ảnh nhỏ hơn." });
+                        }
 
-                        string fileName = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Path.GetFileName(payment_image.FileName)}";
-                        string fullPath = Path.Combine(folder, fileName);
-                        payment_image.SaveAs(fullPath);
-
-                        imagePath = fullPath;
+                        try
+                        {
+                            imagePath = CloudinaryHelper.UploadImage(payment_image);
+                            System.Diagnostics.Debug.WriteLine("✅ Uploaded to Cloudinary: " + imagePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            return Json(new { success = false, message = "Lỗi upload Cloudinary: " + ex.Message });
+                        }
                     }
+
 
                     var invoice = new invoice
                     {
                         customer_id = customer.id,
                         total_amount = tongTien,
                         note = "Đặt sân tự động",
-                        is_paid = (payment_method == "Chuyển khoản"),
-                        payment_method = payment_method,
+                        is_paid = (payment_method != "Tiền mặt"),
+                        payment_method = (payment_method == "Tiền mặt" ? "Nợ" : payment_method),
                         payment_image = imagePath,
                         created_at = DateTime.Now
                     };
                     db.invoices.Add(invoice);
                     db.SaveChanges();
-
+                    // GÁN LẠI invoice_id CHO MỖI BOOKING
+                    foreach (var b in createdBookings)
+                    {
+                        b.invoice_id = invoice.id;
+                        db.Entry(b).State = EntityState.Modified;
+                    }
+                    db.SaveChanges(); // lưu lại booking sau khi gán invoice_id
                     foreach (var b in createdBookings)
                     {
                         var detail = new invoice_details
@@ -235,13 +413,15 @@ namespace QL_SanCauLong.Controllers
                             item_id = 1,
                             quantity = 1,
                             unit_price = b.price,
-                            created_at = DateTime.Now
+                            created_at = DateTime.Now,
+                            is_paid = invoice.is_paid,
+                            booking_id = b.id
                         };
                         db.invoice_details.Add(detail);
                     }
 
                     db.SaveChanges();
-
+                    var lastBooking = createdBookings.OrderByDescending(b => b.created_at).FirstOrDefault();
                     var thongBao = new ThongBaoModel
                     {
                         Id = ThongBaoModel.DanhSachThongBao.Any() ? ThongBaoModel.DanhSachThongBao.Max(t => t.Id) + 1 : 1,
@@ -249,20 +429,29 @@ namespace QL_SanCauLong.Controllers
                         SoDienThoai = customer.phone,
                         NgayTao = DateTime.Now.ToString("dd/MM/yyyy HH:mm"),
                         TongTien = tongTien,
-                        ChiTiet = bookings
+                        ChiTiet = bookings,
+                        BookingId = lastBooking?.id
                     };
                     ThongBaoModel.DanhSachThongBao.Add(thongBao);
 
                     transaction.Commit();
                     return Json(new { success = true, redirectUrl = Url.Action("ViewDatSan", "Booking") });
                 }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    return Json(new { success = false, message = ex.Message });
-                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi tổng quát: " + ex.ToString());
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
+        //================================================================================================================================
+        [HttpGet]
+        public JsonResult GetLastBookingTimestamp()
+        {
+            var last = db.bookings.OrderByDescending(b => b.created_at).Select(b => b.created_at).FirstOrDefault();
+            return Json(new { lastUpdated = last?.ToString("o") }, JsonRequestBehavior.AllowGet); // dạng ISO 8601
+        }
+
 
     }
 

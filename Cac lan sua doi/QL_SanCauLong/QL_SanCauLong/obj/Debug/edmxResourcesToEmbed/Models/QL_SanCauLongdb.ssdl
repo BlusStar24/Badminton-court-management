@@ -1,0 +1,341 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="QuanLySanCauLongModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityType Name="bookings">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="customer_id" Type="int" Nullable="false" />
+    <Property Name="court_id" Type="int" Nullable="false" />
+    <Property Name="date" Type="date" Nullable="false" />
+    <Property Name="start_time" Type="time" Precision="7" Nullable="false" />
+    <Property Name="end_time" Type="time" Precision="7" Nullable="false" />
+    <Property Name="type" Type="nvarchar" MaxLength="20" Nullable="false" />
+    <Property Name="price" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="is_paid" Type="bit" />
+    <Property Name="payment_method" Type="nvarchar" MaxLength="50" />
+    <Property Name="invoice_id" Type="int" />
+  </EntityType>
+  <EntityType Name="courts">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="name" Type="varchar" MaxLength="50" Nullable="false" />
+    <Property Name="status" Type="varchar" MaxLength="20" />
+    <Property Name="created_at" Type="datetime" />
+  </EntityType>
+  <EntityType Name="customers">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="name" Type="nvarchar" MaxLength="400" />
+    <Property Name="phone" Type="varchar" MaxLength="20" />
+    <Property Name="role" Type="nvarchar" MaxLength="20" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="password" Type="nvarchar" MaxLength="100" Nullable="false" />
+  </EntityType>
+  <EntityType Name="employees">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="name" Type="varchar" MaxLength="100" Nullable="false" />
+    <Property Name="phone" Type="varchar" MaxLength="20" />
+    <Property Name="position" Type="varchar" MaxLength="50" />
+    <Property Name="created_at" Type="datetime" />
+  </EntityType>
+  <EntityType Name="invoice_details">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="invoice_id" Type="int" Nullable="false" />
+    <Property Name="item_id" Type="int" Nullable="false" />
+    <Property Name="quantity" Type="int" Nullable="false" />
+    <Property Name="unit_price" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="total_price" Type="decimal" Precision="21" Scale="2" StoreGeneratedPattern="Computed" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="is_paid" Type="bit" />
+  </EntityType>
+  <EntityType Name="invoices">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="customer_id" Type="int" Nullable="false" />
+    <Property Name="total_amount" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="note" Type="nvarchar" MaxLength="255" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="is_paid" Type="bit" />
+    <Property Name="payment_method" Type="nvarchar" MaxLength="50" />
+    <Property Name="payment_image" Type="nvarchar" MaxLength="255" />
+  </EntityType>
+  <EntityType Name="mat_hang">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="ten_hang" Type="nvarchar" MaxLength="100" Nullable="false" />
+    <Property Name="gia_ban" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="don_vi_chinh" Type="nvarchar" MaxLength="20" />
+    <Property Name="don_vi_quy_doi" Type="nvarchar" MaxLength="20" />
+    <Property Name="so_luong_quy_doi" Type="int" />
+    <Property Name="gia_nhap" Type="decimal" Precision="10" Scale="2" />
+    <Property Name="loai" Type="nvarchar" MaxLength="50" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="don_vi" Type="nvarchar" MaxLength="20" />
+    <Property Name="hinh_anh" Type="nvarchar" MaxLength="255" />
+  </EntityType>
+  <EntityType Name="nhap_kho">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="item_id" Type="int" Nullable="false" />
+    <Property Name="so_luong" Type="int" Nullable="false" />
+    <Property Name="gia_nhap" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="created_at" Type="datetime" />
+    <Property Name="don_vi" Type="nvarchar" MaxLength="20" Nullable="false" />
+  </EntityType>
+  <EntityType Name="price_rules">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="day_of_week" Type="int" />
+    <Property Name="start_hour" Type="int" />
+    <Property Name="end_hour" Type="int" />
+    <Property Name="type" Type="nvarchar" MaxLength="20" />
+    <Property Name="price_per_hour" Type="decimal" Precision="10" Scale="2" />
+  </EntityType>
+  <EntityType Name="salary">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="employee_id" Type="int" Nullable="false" />
+    <Property Name="month" Type="int" Nullable="false" />
+    <Property Name="year" Type="int" Nullable="false" />
+    <Property Name="total_shift" Type="int" />
+    <Property Name="total_hours" Type="decimal" Precision="5" Scale="2" />
+    <Property Name="base_salary" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+    <Property Name="bonus" Type="decimal" Precision="10" Scale="2" />
+    <Property Name="total_amount" Type="decimal" Precision="11" Scale="2" StoreGeneratedPattern="Computed" />
+    <Property Name="created_at" Type="datetime" />
+  </EntityType>
+  <EntityType Name="ton_kho">
+    <Key>
+      <PropertyRef Name="item_id" />
+    </Key>
+    <Property Name="item_id" Type="int" Nullable="false" />
+    <Property Name="so_luong_ton" Type="int" />
+  </EntityType>
+  <EntityType Name="work_schedule">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="employee_id" Type="int" Nullable="false" />
+    <Property Name="work_date" Type="date" Nullable="false" />
+    <Property Name="start_time" Type="time" Precision="7" Nullable="false" />
+    <Property Name="end_time" Type="time" Precision="7" Nullable="false" />
+    <Property Name="note" Type="text" />
+    <Property Name="created_at" Type="datetime" />
+  </EntityType>
+  <Association Name="FK__bookings__court___5AEE82B9">
+    <End Role="courts" Type="Self.courts" Multiplicity="1" />
+    <End Role="bookings" Type="Self.bookings" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="courts">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="bookings">
+        <PropertyRef Name="court_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__bookings__custom__59FA5E80">
+    <End Role="customers" Type="Self.customers" Multiplicity="1" />
+    <End Role="bookings" Type="Self.bookings" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="customers">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="bookings">
+        <PropertyRef Name="customer_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__invoice_d__invoi__75A278F5">
+    <End Role="invoices" Type="Self.invoices" Multiplicity="1" />
+    <End Role="invoice_details" Type="Self.invoice_details" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="invoices">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="invoice_details">
+        <PropertyRef Name="invoice_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__invoice_d__item___76969D2E">
+    <End Role="mat_hang" Type="Self.mat_hang" Multiplicity="1" />
+    <End Role="invoice_details" Type="Self.invoice_details" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="invoice_details">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__invoices__custom__656C112C">
+    <End Role="customers" Type="Self.customers" Multiplicity="1" />
+    <End Role="invoices" Type="Self.invoices" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="customers">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="invoices">
+        <PropertyRef Name="customer_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__nhap_kho__item_i__70DDC3D8">
+    <End Role="mat_hang" Type="Self.mat_hang" Multiplicity="1" />
+    <End Role="nhap_kho" Type="Self.nhap_kho" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="nhap_kho">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__salary__employee__5535A963">
+    <End Role="employees" Type="Self.employees" Multiplicity="1" />
+    <End Role="salary" Type="Self.salary" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="employees">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="salary">
+        <PropertyRef Name="employee_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__ton_kho__item_id__7C4F7684">
+    <End Role="mat_hang" Type="Self.mat_hang" Multiplicity="1" />
+    <End Role="ton_kho" Type="Self.ton_kho" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="mat_hang">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="ton_kho">
+        <PropertyRef Name="item_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK__work_sche__emplo__4E88ABD4">
+    <End Role="employees" Type="Self.employees" Multiplicity="1" />
+    <End Role="work_schedule" Type="Self.work_schedule" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="employees">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="work_schedule">
+        <PropertyRef Name="employee_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_bookings_invoices">
+    <End Role="invoices" Type="Self.invoices" Multiplicity="0..1" />
+    <End Role="bookings" Type="Self.bookings" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="invoices">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="bookings">
+        <PropertyRef Name="invoice_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Function Name="fn_xem_ton_kho_chi_tiet" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="true" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+    <ReturnType>
+      <CollectionType>
+        <RowType>
+          <Property Name="item_id" Type="int" Nullable="false" />
+          <Property Name="ten_hang" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="loai" Type="nvarchar" MaxLength="50" />
+          <Property Name="don_vi_chinh" Type="nvarchar" MaxLength="20" />
+          <Property Name="don_vi_quy_doi" Type="nvarchar" MaxLength="20" />
+          <Property Name="so_luong_quy_doi" Type="int" />
+          <Property Name="gia_nhap" Type="decimal" Precision="10" Scale="2" />
+          <Property Name="gia_ban" Type="decimal" Precision="10" Scale="2" Nullable="false" />
+          <Property Name="tong_so_luong_ton" Type="int" />
+          <Property Name="so_thung" Type="numeric" Precision="24" Scale="0" />
+          <Property Name="le_don_vi" Type="int" />
+        </RowType>
+      </CollectionType>
+    </ReturnType>
+  </Function>
+  <EntityContainer Name="QuanLySanCauLongModelStoreContainer">
+    <EntitySet Name="bookings" EntityType="Self.bookings" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="courts" EntityType="Self.courts" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="customers" EntityType="Self.customers" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="employees" EntityType="Self.employees" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="invoice_details" EntityType="Self.invoice_details" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="invoices" EntityType="Self.invoices" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="mat_hang" EntityType="Self.mat_hang" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="nhap_kho" EntityType="Self.nhap_kho" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="price_rules" EntityType="Self.price_rules" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="salary" EntityType="Self.salary" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="ton_kho" EntityType="Self.ton_kho" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="work_schedule" EntityType="Self.work_schedule" Schema="dbo" store:Type="Tables" />
+    <AssociationSet Name="FK__bookings__court___5AEE82B9" Association="Self.FK__bookings__court___5AEE82B9">
+      <End Role="courts" EntitySet="courts" />
+      <End Role="bookings" EntitySet="bookings" />
+    </AssociationSet>
+    <AssociationSet Name="FK__bookings__custom__59FA5E80" Association="Self.FK__bookings__custom__59FA5E80">
+      <End Role="customers" EntitySet="customers" />
+      <End Role="bookings" EntitySet="bookings" />
+    </AssociationSet>
+    <AssociationSet Name="FK__invoice_d__invoi__75A278F5" Association="Self.FK__invoice_d__invoi__75A278F5">
+      <End Role="invoices" EntitySet="invoices" />
+      <End Role="invoice_details" EntitySet="invoice_details" />
+    </AssociationSet>
+    <AssociationSet Name="FK__invoice_d__item___76969D2E" Association="Self.FK__invoice_d__item___76969D2E">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="invoice_details" EntitySet="invoice_details" />
+    </AssociationSet>
+    <AssociationSet Name="FK__invoices__custom__656C112C" Association="Self.FK__invoices__custom__656C112C">
+      <End Role="customers" EntitySet="customers" />
+      <End Role="invoices" EntitySet="invoices" />
+    </AssociationSet>
+    <AssociationSet Name="FK__nhap_kho__item_i__70DDC3D8" Association="Self.FK__nhap_kho__item_i__70DDC3D8">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="nhap_kho" EntitySet="nhap_kho" />
+    </AssociationSet>
+    <AssociationSet Name="FK__salary__employee__5535A963" Association="Self.FK__salary__employee__5535A963">
+      <End Role="employees" EntitySet="employees" />
+      <End Role="salary" EntitySet="salary" />
+    </AssociationSet>
+    <AssociationSet Name="FK__ton_kho__item_id__7C4F7684" Association="Self.FK__ton_kho__item_id__7C4F7684">
+      <End Role="mat_hang" EntitySet="mat_hang" />
+      <End Role="ton_kho" EntitySet="ton_kho" />
+    </AssociationSet>
+    <AssociationSet Name="FK__work_sche__emplo__4E88ABD4" Association="Self.FK__work_sche__emplo__4E88ABD4">
+      <End Role="employees" EntitySet="employees" />
+      <End Role="work_schedule" EntitySet="work_schedule" />
+    </AssociationSet>
+    <AssociationSet Name="FK_bookings_invoices" Association="Self.FK_bookings_invoices">
+      <End Role="invoices" EntitySet="invoices" />
+      <End Role="bookings" EntitySet="bookings" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>

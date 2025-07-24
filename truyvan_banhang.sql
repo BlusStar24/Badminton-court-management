@@ -7,20 +7,29 @@ VALUES
 (3, 2, 72000, N'thùng'),  -- 2 thùng * 24 chai = 48 chai
 (4, 5, 5000, N'gói');      -- 5 gói
 
-INSERT INTO invoices (customer_id, total_amount, note, is_paid)
-VALUES (1, 10000, N'Mua hàng tại quầy', 1);
+SELECT * FROM invoice_details WHERE id = 406;
+SELECT * FROM invoices WHERE id = 317;
+	
+	SELECT @@DATEFIRST AS FirstDayOfWeek,
+       DATENAME(WEEKDAY, '2025-07-21') AS WeekdayName,
+       DATEPART(WEEKDAY, '2025-07-21') AS WeekdayNumber
 
-SELECT * FROM fn_xem_ton_kho_chi_tiet();
-SELECT * FROM mat_hang
 SELECT * FROM nhap_kho
 
 SELECT * FROM customers
+SELECT * FROM mat_hang
+SELECT * FROM ton_kho
+SELECT * FROM nhap_kho
 SELECT * FROM bookings
 SELECT * FROM invoices
 SELECT * FROM invoice_details
+EXEC sp_TinhNoChiTietKhachHang;
+SELECT * FROM price_rules
 DELETE FROM bookings WHERE id = 203;
+DROP PROCEDURE sp_TinhNoChiTietKhachHang;
 
-
+SELECT * FROM bookings WHERE is_paid = 0;
+SELECT * FROM invoices WHERE id = 95;
 
 DECLARE @invoiceId INT = SCOPE_IDENTITY();
 
@@ -29,3 +38,12 @@ INSERT INTO invoice_details (invoice_id, item_id, quantity, unit_price)
 VALUES 
 (@invoiceId, 3, 2, 5000),   -- Nước suối: 2 chai * 5.000
 (@invoiceId, 4, 1, 8000); 
+
+SELECT *
+FROM invoice_details ct
+JOIN invoices inv ON ct.invoice_id = inv.id
+JOIN customers c ON inv.customer_id = c.id
+WHERE c.name = 'XuanCuong'
+  AND ct.is_paid = 0
+  AND ct.item_id != 0
+  AND ct.item_id != 1;
